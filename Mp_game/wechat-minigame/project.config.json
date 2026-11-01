@@ -28,8 +28,14 @@
   "libVersion": "latest",
   "packOptions": {
     "ignore": [
-      { "type": "folder", "value": "assets" },
-      { "type": "folder", "value": "tools" }
+      {
+        "value": "assets",
+        "type": "folder"
+      },
+      {
+        "value": "tools",
+        "type": "folder"
+      }
     ],
     "include": []
   },
