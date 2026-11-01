@@ -27,7 +27,10 @@
   },
   "libVersion": "latest",
   "packOptions": {
-    "ignore": [],
+    "ignore": [
+      { "type": "folder", "value": "assets" },
+      { "type": "folder", "value": "tools" }
+    ],
     "include": []
   },
   "simulatorPluginLibVersion": {},

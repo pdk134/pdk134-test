@@ -1,6 +1,7 @@
 const { CONFIG } = require('./config.js')
 const { dist, clamp } = require('./utils.js')
 const { drawZombie } = require('./sprites.js')
+const audio = require('./audio.js')
 
 let NEXT_ID = 1
 
@@ -47,6 +48,7 @@ class Enemy {
     if (len < this.radius + p.radius && this.contactTimer <= 0) {
       p.hp -= this.damage
       this.contactTimer = CONFIG.enemy.contactCd
+      audio.play('hurt', { volume: 0.5, minGap: 0.15 })
     }
   }
 
@@ -57,7 +59,11 @@ class Enemy {
     if (game && game.effects) {
       game.effects.spark(this.x, this.y, '#bfe9ff', { count: 6, speed: 150, life: 0.3, size: 2.5 })
     }
-    if (this.hp <= 0) this.dead = true
+    audio.play('hit', { volume: 0.35, minGap: 0.04 })
+    if (this.hp <= 0) {
+      this.dead = true
+      audio.play('die', { volume: 0.45, minGap: 0.08 })
+    }
   }
 
   draw(ctx) {

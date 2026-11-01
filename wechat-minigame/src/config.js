@@ -1,5 +1,17 @@
 // 游戏全局配置（俯视生存竞技场 / 升级选卡）
 const CONFIG = {
+  // 远程资源基址：留空 '' 则使用本地 assets/（当前行为不变）。
+  // 填你的 CDN/云存储地址（结尾带 /），例如 'https://cdn.example.com/game/'，
+  // 所有图片将改为远程下载，主包仅剩代码，彻底绕开 4MB 限制。
+  REMOTE_BASE: '',
+  // —— 微信云开发（云存储）模式 ——
+  // CLOUD_ENV：云开发环境 ID（如 'my-env-1'），需在 main.js 里 wx.cloud.init
+  // CLOUD_BASE：云存储中图片文件的公共前缀（结尾带 /），如 'cloud://env-xxx.bucket/game/'
+  // 填了 CLOUD_BASE 就走 wx.cloud.downloadFile，**不需要配 downloadFile 合法域名**
+  CLOUD_ENV: 'akk-d9gj1v4nt926432f5',
+  // 云存储文件前缀（来自控制台真实文件 ID）
+  // 注意：上传文件夹时本地目录名 _cloud_game 成了云端路径，所以前缀要带 /_cloud_game/
+  CLOUD_BASE: 'cloud://akk-d9gj1v4nt926432f5.616b-akk-d9gj1v4nt926432f5-1522500102/_cloud_game/',
   player: {
     radius: 16,
     maxHp: 100,
@@ -26,13 +38,17 @@ const CONFIG = {
   },
   enemy: {
     radius: 14,
-    baseHp: 20,
-    hpPerWave: 14,       // 每波（难度档）敌人生命增量
+    baseHp: 40,          // ← 怪的数据 ×2（原 20）
+    hpPerWave: 28,       // 每波（难度档）敌人生命增量（原 14）
     speed: 52,
     speedPerWave: 5,      // 每波敌人速度增量
-    damage: 8,
+    damage: 16,          // ← 怪的数据 ×2（原 8）
     contactCd: 0.5,
-    xp: 3
+    xp: 6                // ← 怪的数据 ×2（原 3）
+  },
+  sound: {
+    enabled: true,       // 总开关
+    volume: 0.7          // 默认音量
   },
   level: {
     base: 40,      // 升到第 2 级所需经验

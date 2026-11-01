@@ -5,15 +5,91 @@ const loader = {
   images: {},
   sheets: {},
 
+  // —— 云存储：自动发现存储桶前缀 ——
+  // 上传一个探针文件换取 fileID，从里面解析出 bucket（如 cloud://env.bucket/），
+  // 结果缓存到本地存储，下次启动直接用；探针文件随即删除。
+  _cloudPrefix() {
+    if (this._prefix) return Promise.resolve(this._prefix)
+    let cached = ''
+    try { cached = wx.getStorageSync('tcb_prefix') || '' } catch (e) { cached = '' }
+    if (cached) { this._prefix = cached; return Promise.resolve(cached) }
+    return new Promise((resolve) => {
+      if (!wx.cloud) { resolve(''); return }
+      wx.cloud.uploadFile({
+        cloudPath: '__probe__.txt',
+        fileContent: new Uint8Array([1]).buffer,
+        success: (r) => {
+          const fid = (r && r.fileID) || ''
+          const i = fid.lastIndexOf('/')
+          const prefix = i > 0 ? fid.slice(0, i + 1) : ''
+          if (prefix) {
+            this._prefix = prefix
+            console.log('[assets] 自动探测到云存储前缀:', prefix)
+            try { wx.setStorageSync('tcb_prefix', prefix) } catch (e) { /* 忽略 */ }
+            try { wx.cloud.deleteFile({ fileList: [fid], fail: () => {} }) } catch (e) { /* 忽略 */ }
+          }
+          resolve(prefix)
+        },
+        fail: (err) => {
+          console.warn('[assets] 探针上传失败，无法自动探测前缀:', err && (err.errMsg || err))
+          resolve('')
+        }
+      })
+    })
+  },
+
+  // 加载单图，三种来源自动识别：
+  //   cloud://auto/xxx → 云存储：自动发现桶前缀后下载（无需配 downloadFile 合法域名）
+  //   cloud://xxx     → 云存储：指定 fileID 前缀直接下载
+  //   http(s)://      → 普通 CDN（需配 downloadFile 合法域名）
+  //   其他（相对路径） → 本地 assets/ 直接加载
   load(name, src) {
     return new Promise((resolve) => {
-      try {
-        const img = wx.createImage()
-        img.onload = () => { this.images[name] = img; resolve(img) }
-        img.onerror = () => { resolve(null) }
-        img.src = src
-      } catch (e) {
-        resolve(null)
+      // 把图片真正读出来（本地路径 / 临时文件路径均可）
+      const done = (finalSrc) => {
+        try {
+          const img = wx.createImage()
+          img.onload = () => { this.images[name] = img; resolve(img) }
+          img.onerror = () => {
+            console.warn('[assets] 图片解码失败:', name, finalSrc)
+            resolve(null)
+          }
+          img.src = finalSrc
+        } catch (e) {
+          console.warn('[assets] 创建图片失败:', name, e)
+          resolve(null)
+        }
+      }
+      if (/^cloud:\/\//.test(src)) {
+        if (!wx.cloud) { resolve(null); return }
+        const dl = (fileID, next) => {
+          wx.cloud.downloadFile({
+            fileID,
+            success: (r) => done(r.tempFilePath || fileID),
+            fail: (err) => {
+              console.warn('[assets] 云存储下载失败:', name, fileID, err && (err.errMsg || err))
+              if (next) next(); else resolve(null)
+            }
+          })
+        }
+        if (src.indexOf('cloud://auto/') === 0) {
+          this._cloudPrefix().then((prefix) => {
+            if (!prefix) { resolve(null); return }
+            const rest = src.slice('cloud://auto/'.length)
+            // 依次尝试：桶根目录 → game 子目录（图片传到子文件夹也能找到）
+            dl(prefix + rest, () => dl(prefix + 'game/' + rest, null))
+          })
+        } else {
+          dl(src, null)
+        }
+      } else if (/^https?:\/\//.test(src)) {
+        wx.downloadFile({
+          url: src,
+          success: (r) => done(r.tempFilePath || src),
+          fail: () => resolve(null)
+        })
+      } else {
+        done(src)
       }
     })
   },

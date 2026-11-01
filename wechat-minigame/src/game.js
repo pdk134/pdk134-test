@@ -10,6 +10,7 @@ const Progress = require('./progress.js')
 const { EQUIP_SLOTS, getEquip, slotName } = require('./equipment.js')
 const { drawChibi } = require('./sprites.js')
 const { WEAPONS } = require('./weapons.js')
+const audio = require('./audio.js')
 
 function inRect(x, y, r) {
   return r && x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h
@@ -144,6 +145,7 @@ class Game {
     }
     this.waveTimer = CONFIG.wave.duration
     this.waveBannerT = 1.6
+    audio.play('wave', { volume: 0.5 })
     // 中后期波次自动获得 1 名伙伴
     if (this.wave >= CONFIG.wave.companionFromWave && this.companions.length < CONFIG.wave.maxCompanions) {
       this.addCompanion()
@@ -206,12 +208,14 @@ class Game {
       this.player.xpNeeded = Math.floor(CONFIG.level.base * Math.pow(CONFIG.level.ratio, this.player.level - 1))
       this.pendingLevelUps++
       this.openCards()
+      audio.play('levelup', { volume: 0.55 })
     }
 
     // 失败检测
     if (this.player.hp <= 0) {
       this.player.hp = 0
       this.state = 'lose'
+      audio.play('hurt', { volume: 0.7 })
     }
   }
 
@@ -230,40 +234,43 @@ class Game {
   onTouch(x, y) {
     // —— 大厅 ——
     if (this.state === 'lobby') {
-      if (inRect(x, y, this.lobbyStartRect)) this.beginGame()
-      else if (inRect(x, y, this.lobbyInvRect)) this.state = 'inventory'
+      if (inRect(x, y, this.lobbyStartRect)) { audio.play('click'); this.beginGame() }
+      else if (inRect(x, y, this.lobbyInvRect)) { audio.play('click'); this.state = 'inventory' }
       return
     }
     // —— 物品栏 ——
     if (this.state === 'inventory') {
       for (const s of EQUIP_SLOTS) {
-        if (inRect(x, y, this.invSlotRects[s.key])) { this.progress.unequip(s.key); return }
+        if (inRect(x, y, this.invSlotRects[s.key])) { audio.play('click'); this.progress.unequip(s.key); return }
       }
       for (const r of this.invItemRects) {
-        if (inRect(x, y, r)) { this.progress.equip(r.slot, r.id); return }
+        if (inRect(x, y, r)) { audio.play('click'); this.progress.equip(r.slot, r.id); return }
       }
-      if (inRect(x, y, this.invBackRect)) this.state = 'lobby'
+      if (inRect(x, y, this.invBackRect)) { audio.play('click'); this.state = 'lobby' }
       return
     }
     // —— 升级选卡 ——
     if (this.state === 'levelup') {
       for (let i = 0; i < this.cardRects.length; i++) {
         const r = this.cardRects[i]
-        if (inRect(x, y, r)) { this.chooseCard(i); return }
+        if (inRect(x, y, r)) { audio.play('click'); this.chooseCard(i); return }
       }
     } else if (this.state === 'win') {
       // 战利品 3 选 1
       for (let i = 0; i < this.endCardRects.length; i++) {
         const r = this.endCardRects[i]
-        if (inRect(x, y, r)) { this.progress.addOwned(this.loot[i]); this.state = 'lobby'; return }
+        if (inRect(x, y, r)) {
+          audio.play('loot')
+          this.progress.addOwned(this.loot[i]); this.state = 'lobby'; return
+        }
       }
-      if (inRect(x, y, this.endSkipRect)) this.state = 'lobby'
+      if (inRect(x, y, this.endSkipRect)) { audio.play('click'); this.state = 'lobby' }
     } else if (this.state === 'lose') {
-      if (inRect(x, y, this.endSkipRect)) this.state = 'lobby'
+      if (inRect(x, y, this.endSkipRect)) { audio.play('click'); this.state = 'lobby' }
     } else if (this.state === 'playing') {
       if (this.exitConfirm) {
-        if (inRect(x, y, this.exitConfirmRect)) { this.exitConfirm = false; this.state = 'lobby'; return }
-        if (inRect(x, y, this.exitCancelRect)) { this.exitConfirm = false; return }
+        if (inRect(x, y, this.exitConfirmRect)) { audio.play('click'); this.exitConfirm = false; this.state = 'lobby'; return }
+        if (inRect(x, y, this.exitCancelRect)) { audio.play('click'); this.exitConfirm = false; return }
         this.exitConfirm = false  // 点弹窗外区域 = 取消
         return
       }

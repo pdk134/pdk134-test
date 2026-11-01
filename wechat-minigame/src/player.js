@@ -2,6 +2,7 @@ const { CONFIG } = require('./config.js')
 const { clamp, dist } = require('./utils.js')
 const { drawChibi } = require('./sprites.js')
 const { Projectile, Boomerang } = require('./projectile.js')
+const audio = require('./audio.js')
 
 // 主角：自动移动（绕最近敌人走位）+ 自动攻击
 class Player {
@@ -154,6 +155,7 @@ class Player {
     if (hit.size > 0) {
       fx.shakeAdd(5, 0.12)
       fx.hitStopAdd(0.02)
+      audio.play('zap', { volume: 0.55 })
     }
   }
 
@@ -175,6 +177,7 @@ class Player {
       ))
     }
     fx.spark(this.x, this.y, '#FFD166', { count: 4, speed: 130, life: 0.2, size: 3 })
+    audio.play('shoot', { volume: 0.45, minGap: 0.03 })
   }
 
   // 回旋镖：投出后飞到最大距离再飞回，沿途命中敌人
@@ -190,6 +193,7 @@ class Player {
       game.boomerangs.push(new Boomerang(this.x, this.y, a, d, this.boomDist, this.boomSpeed, this.boomSize))
     }
     fx.spark(this.x, this.y, '#80ED99', { count: 5, speed: 140, life: 0.25 })
+    audio.play('boom', { volume: 0.55 })
   }
 }
 

@@ -1,3 +1,5 @@
+const audio = require('./audio.js')
+
 // 子弹
 class Projectile {
   constructor(x, y, vx, vy, damage, hits) {
@@ -72,6 +74,7 @@ class Boomerang {
         e.hurt(this.damage, game)
         this.hit.add(e.id)
         game.effects.spark(e.x, e.y, '#80ED99', { count: 6, speed: 140, life: 0.3 })
+        audio.play('boom_hit', { volume: 0.4, minGap: 0.05 })
       }
     }
     if (this.x < -40 || this.x > game.w + 40 || this.y < -40 || this.y > game.h + 40) this.dead = true
