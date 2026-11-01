@@ -6,14 +6,14 @@ let NEXT_ID = 1
 
 // 敌人：从四周生成，向主角移动，接触造成伤害
 class Enemy {
-  constructor(x, y, stage) {
+  constructor(x, y, wave) {
     this.id = NEXT_ID++
     this.x = x
     this.y = y
     this.radius = CONFIG.enemy.radius
-    this.maxHp = CONFIG.enemy.baseHp + (stage - 1) * CONFIG.enemy.hpPerStage
+    this.maxHp = CONFIG.enemy.baseHp + (wave - 1) * CONFIG.enemy.hpPerWave
     this.hp = this.maxHp
-    this.speed = CONFIG.enemy.speed + (stage - 1) * CONFIG.enemy.speedPerStage
+    this.speed = CONFIG.enemy.speed + (wave - 1) * CONFIG.enemy.speedPerWave
     this.damage = CONFIG.enemy.damage
     this.xp = CONFIG.enemy.xp
     this.dead = false
@@ -22,12 +22,15 @@ class Enemy {
     this.faceY = 1
     this.hitFlash = 0       // 受击泛白计时
     this.stun = 0          // 雷电链短暂停顿
+    this.slowT = 0         // 减速剩余时长
+    this.slowF = 1         // 减速系数（<1）
   }
 
   update(dt, game) {
     const p = game.player
     if (this.hitFlash > 0) this.hitFlash -= dt
     if (this.stun > 0) this.stun -= dt
+    if (this.slowT > 0) this.slowT -= dt
     if (p.hp <= 0) return
     const dx = p.x - this.x
     const dy = p.y - this.y
@@ -35,8 +38,9 @@ class Enemy {
     this.faceX = dx / len
     this.faceY = dy / len
     if (this.stun <= 0) {
-      this.x += this.faceX * this.speed * dt
-      this.y += this.faceY * this.speed * dt
+      const sf = this.slowT > 0 ? this.slowF : 1
+      this.x += this.faceX * this.speed * sf * dt
+      this.y += this.faceY * this.speed * sf * dt
     }
 
     this.contactTimer -= dt

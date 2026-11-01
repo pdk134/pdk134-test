@@ -33,4 +33,49 @@ class Projectile {
   }
 }
 
-module.exports = Projectile
+// 回旋镖：先沿方向飞出到最大距离，再飞回主角；来回都能命中敌人
+class Boomerang {
+  constructor(x, y, dir, damage, maxDist, speed, size) {
+    this.x = x
+    this.y = y
+    this.dir = dir
+    this.damage = damage
+    this.maxDist = maxDist
+    this.speed = speed
+    this.size = size
+    this.traveled = 0
+    this.phase = 'out'
+    this.hit = new Set()    // 同一趟命中过的敌人不再重复结算
+    this.dead = false
+    this.spin = 0
+  }
+
+  update(dt, game) {
+    const step = this.speed * dt
+    if (this.phase === 'out') {
+      this.x += Math.cos(this.dir) * step
+      this.y += Math.sin(this.dir) * step
+      this.traveled += step
+      if (this.traveled >= this.maxDist) this.phase = 'back'
+    } else {
+      const a = Math.atan2(game.player.y - this.y, game.player.x - this.x)
+      this.x += Math.cos(a) * step
+      this.y += Math.sin(a) * step
+      if (Math.hypot(game.player.x - this.x, game.player.y - this.y) < game.player.radius + this.size) {
+        this.dead = true
+      }
+    }
+    this.spin += dt * 14
+    for (const e of game.enemies) {
+      if (e.dead || this.hit.has(e.id)) continue
+      if (Math.hypot(this.x - e.x, this.y - e.y) < this.size + e.radius) {
+        e.hurt(this.damage, game)
+        this.hit.add(e.id)
+        game.effects.spark(e.x, e.y, '#80ED99', { count: 6, speed: 140, life: 0.3 })
+      }
+    }
+    if (this.x < -40 || this.x > game.w + 40 || this.y < -40 || this.y > game.h + 40) this.dead = true
+  }
+}
+
+module.exports = { Projectile, Boomerang }

@@ -1,11 +1,14 @@
-// 程序化特效（不依赖贴图）：粒子、锯齿闪电、屏幕震动、命中顿帧
+// 程序化特效（粒子/闪电/震屏/顿帧）+ 烘焙贴图闪电帧（bolt1-4.png，缺失自动跳过）
 // 全部用 canvas 加色混合(lighter)绘制，配合暗色背景出炫光感
+const loader = require('./assets.js')
 const LIGHTNING = '#bfe9ff'
 
 class Effects {
   constructor() {
     this.particles = []   // 电火花 / 碎块
     this.bolts = []       // 锯齿闪电线段
+    this.rings = []       // 范围爆发扩散圈
+    this.flashes = []     // 贴图闪电冲击帧
     this.shake = { t: 0, dur: 0, mag: 0 }
     this.hitStop = 0      // 命中顿帧计时(s)
   }
@@ -69,6 +72,30 @@ class Effects {
     this.bolts.push({ pts, color: color || LIGHTNING, life, maxLife: life, width: opts.width || 3 })
   }
 
+  // 范围爆发扩散圈（如雷暴特化的 AoE 落点）
+  ring(x, y, r, color, opts) {
+    opts = opts || {}
+    this.rings.push({
+      x, y, rMax: r,
+      life: opts.life || 0.28, maxLife: opts.life || 0.28,
+      color: color || LIGHTNING, width: opts.width || 3
+    })
+  }
+
+  // 贴图闪电冲击帧（随机 4 帧之一，随机翻转/微旋转），无资源时静默跳过
+  flash(x, y, scale, opts) {
+    opts = opts || {}
+    const img = loader.get('bolt' + (1 + Math.floor(Math.random() * 4)))
+    if (!img) return
+    const life = opts.life || 0.16
+    this.flashes.push({
+      x, y, img, life, maxLife: life,
+      scale: scale || 0.45,
+      rot: (Math.random() - 0.5) * 0.5,
+      flip: Math.random() < 0.5
+    })
+  }
+
   shakeAdd(mag, dur) {
     if (mag > this.shake.mag || this.shake.t <= 0) {
       this.shake.mag = mag; this.shake.dur = dur; this.shake.t = dur
@@ -100,6 +127,16 @@ class Effects {
       bs[i].life -= dt
       if (bs[i].life <= 0) bs.splice(i, 1)
     }
+    const rs = this.rings
+    for (let i = rs.length - 1; i >= 0; i--) {
+      rs[i].life -= dt
+      if (rs[i].life <= 0) rs.splice(i, 1)
+    }
+    const fs = this.flashes
+    for (let i = fs.length - 1; i >= 0; i--) {
+      fs[i].life -= dt
+      if (fs[i].life <= 0) fs.splice(i, 1)
+    }
   }
 
   draw(ctx) {
@@ -112,7 +149,7 @@ class Effects {
       ctx.globalAlpha = a
       ctx.lineJoin = 'round'
       ctx.shadowColor = b.color
-      ctx.shadowBlur = 18
+      ctx.shadowBlur = 10
       ctx.lineWidth = b.width + 6
       this._stroke(ctx, b.pts)
       ctx.shadowBlur = 0
@@ -121,13 +158,41 @@ class Effects {
       ctx.globalAlpha = 1
       this._stroke(ctx, b.pts)
     }
-    // 粒子：加色发光
+    // 范围爆发扩散圈：从中心向外扩张并淡出
+    for (const r of this.rings) {
+      const k = 1 - r.life / r.maxLife
+      const rad = r.rMax * k
+      ctx.globalAlpha = r.life / r.maxLife
+      ctx.strokeStyle = r.color
+      ctx.lineWidth = r.width
+      ctx.beginPath()
+      ctx.arc(r.x, r.y, rad, 0, Math.PI * 2)
+      ctx.stroke()
+    }
+
+    // 贴图闪电冲击帧：底部锚定命中点，加色发光
+    for (const f of this.flashes) {
+      const a = Math.max(0, f.life / f.maxLife)
+      const w = f.img.width * f.scale
+      const h = f.img.height * f.scale
+      ctx.globalAlpha = a
+      ctx.save()
+      ctx.translate(f.x, f.y)
+      ctx.rotate(f.rot)
+      if (f.flip) ctx.scale(-1, 1)
+      ctx.drawImage(f.img, -w / 2, -h * 0.78, w, h)
+      ctx.restore()
+    }
+
+    // 粒子：加色发光（无 shadowBlur，用双层圆伪造辉光，性能友好）
     for (const p of this.particles) {
       const a = Math.max(0, p.life / p.maxLife)
-      ctx.globalAlpha = a
-      ctx.shadowColor = p.color
-      ctx.shadowBlur = 10
       ctx.fillStyle = p.color
+      ctx.globalAlpha = a * 0.35
+      ctx.beginPath()
+      ctx.arc(p.x, p.y, p.size * 2.4, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.globalAlpha = a
       ctx.beginPath()
       ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
       ctx.fill()

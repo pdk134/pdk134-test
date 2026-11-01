@@ -1,5 +1,5 @@
 const { CONFIG } = require('./config.js')
-const Projectile = require('./projectile.js')
+const { Projectile } = require('./projectile.js')
 const { drawChibi } = require('./sprites.js')
 
 // NPC 伙伴：环绕主角、自动攻击敌人（后期关卡解锁）
@@ -17,6 +17,7 @@ class Companion {
     this.orbitR = 64
     this.hair = '#00cec9'   // 伙伴发色（区分主角）
     this.dress = '#81ecec'
+    this.moving = false
   }
 
   update(dt, game) {
@@ -24,6 +25,7 @@ class Companion {
     this.angle += dt * 1.4
     const tx = clampPos(p.x + Math.cos(this.angle) * this.orbitR, this.radius, game.w)
     const ty = clampPos(p.y + Math.sin(this.angle) * this.orbitR, this.radius, game.h)
+    this.moving = Math.hypot(tx - this.x, ty - this.y) > 0.5
     this.x += (tx - this.x) * Math.min(1, dt * 5)
     this.y += (ty - this.y) * Math.min(1, dt * 5)
 
@@ -42,7 +44,7 @@ class Companion {
   }
 
   draw(ctx) {
-    drawChibi(ctx, this.x, this.y, this.radius, this.hair, this.dress, 'ally')
+    drawChibi(ctx, this.x, this.y, this.radius, this.hair, this.dress, 'ally_walk', 'ally_idle', this.moving, 'ally')
   }
 }
 

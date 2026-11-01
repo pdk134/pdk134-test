@@ -52,8 +52,8 @@ function drawSheet(ctx, sheet, x, y, size, faceLeft, frameSeed) {
 function drawZombie(ctx, e) {
   const sheet = loader.getSheet('zombie')
   if (sheet) {
-    // 往返播放（1→2→3→4→3→2→1），消除 4→1 的姿态跳变
-    if (!sheet.seq) sheet.seq = [0, 1, 2, 3, 2, 1]
+    // 4 帧旧表用往返播放消除姿态跳变；6 帧新表本身是闭环，直接正放循环
+    if (!sheet.seq && sheet.frames === 4) sheet.seq = [0, 1, 2, 3, 2, 1]
     const size = e.radius * 3.6
     ctx.fillStyle = 'rgba(0,0,0,0.25)'
     ctx.beginPath()
@@ -138,13 +138,15 @@ function drawZombie(ctx, e) {
 }
 
 // 二次元 Q 版角色：双马尾、大眼、腮红、裙子；可覆盖 PNG / 精灵表
-function drawChibi(ctx, x, y, r, hair, dress, imgName) {
-  if (imgName) {
-    const sheet = loader.getSheet(imgName)
-    if (sheet) { drawSheet(ctx, sheet, x, y, r * 2.6, false, 0); return }
-    const img = loader.get(imgName)
-    if (img) { drawImageSprite(ctx, img, x, y, r * 2.6); return }
-  }
+// walkName/idleName 分别为移动/待机精灵表；moving 为是否在移动；
+// 优先用匹配状态的表，缺失时另一套兜底，再无则静态图，最后矢量占位
+function drawChibi(ctx, x, y, r, hair, dress, walkName, idleName, moving, fallbackName) {
+  const idle = idleName ? loader.getSheet(idleName) : null
+  const walk = walkName ? loader.getSheet(walkName) : null
+  const sheet = moving ? (walk || idle) : (idle || walk)
+  if (sheet) { drawSheet(ctx, sheet, x, y, r * 2.6, false, 0); return }
+  const img = fallbackName ? loader.get(fallbackName) : null
+  if (img) { drawImageSprite(ctx, img, x, y, r * 2.6); return }
 
   ctx.save()
   ctx.translate(x, y)
