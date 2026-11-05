@@ -1,0 +1,10 @@
+# 训练依赖（需 GPU；-r requirements.txt 已包含基础库）
+-r requirements.txt
+torch>=2.1.0
+transformers>=4.44.0
+peft>=0.13.0
+datasets>=2.20.0
+accelerate>=0.34.0
+bitsandbytes>=0.44.0
+# LLaMA-Factory 建议按官方仓库安装：pip install -e ".[torch,metrics]"
+# 也可用 Unsloth（见 train/train.py 的 --backend unsloth 分支）

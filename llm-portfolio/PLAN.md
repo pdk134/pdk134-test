@@ -3,7 +3,7 @@
 > 建立日期：2026-11-04
 > 目标：2027 年 3-4 月在上海拿到大模型岗位 offer（薪资目标 20-30K 平移）
 > 本文件是**唯一进度基准**。后续每次沟通前先读本文件，沟通后由助手更新「时间表状态」与「变更记录」两处，不重写既有计划（除非明确要求改计划）。
-> 当前代码状态：`e:/ttkk/llm-portfolio/` 下只有本文件，尚未生成任何项目代码。
+> 当前代码状态：`d:/gitProjects/llm-portfolio/` 下已生成完整代码骨架（流水线 / 训练 / 评测 / RAG / FastAPI 工作台 / Docker / 测试），CPU 端到端与 DeepSeek 联调已跑通。
 
 ---
 
@@ -121,7 +121,7 @@ llm-portfolio/
 
 | 时间 | 阶段 | 具体任务 | 可验收产出 | 状态 |
 |---|---|---|---|---|
-| 11/4–11/10 | 起步 | 补概念（embedding / token / prompt / SFT / LoRA，只求懂含义不推公式）；Transformer 概念层 8-10 小时；定领域；建仓库目录 | README 项目定位 + 目录骨架 | 进行中 |
+| 11/4–11/10 | 起步 | 补概念（embedding / token / prompt / SFT / LoRA，只求懂含义不推公式）；Transformer 概念层 8-10 小时；定领域；建仓库目录 | README 项目定位 + 目录骨架 | 完成 |
 | 11/11–11/24 | 数据准备 | 调研下载公开数据集（Spider / BIRD / CSpider 类，记 license）；定 `instruction/input/output/meta` schema；用 tokenizer 统计样本 token 长度分布；手写 50 条真实数仓种子样本（时间口径、分区、去重逻辑） | schema 文档 + 50 条种子样本 + 长度分布统计 | 待办 |
 | 11/25–12/8 | 流水线① | 清洗（空值 / 不可执行 SQL / 格式统一 / 长度截断）+ 近似去重（SQL 归一化后哈希 / MinHash）+ 质检规则脚本 | `clean.py`、`dedup.py`、第一份质检报告 | 待办 |
 | 12/9–12/22 | 流水线② | 难度分层（JOIN 数 / 聚合层数 / 条件数）+ 多样性均衡（SQL 模板 × 业务主题分桶）+ 生成训练集 | 1,000–1,500 条 `train.jsonl` + 分布统计图 | 待办 |
@@ -193,10 +193,15 @@ llm-portfolio/
 
 ## 9. 当前状态与下一步
 
-- 当前进度：W1（11/4–11/10），起步阶段。
-- 已完成：岗位信息提取与 Excel 汇总、目标岗位确定、项目方案 A 确定、时间表确定、Transformer 学习边界确定。
-- 尚未生成任何项目代码。
-- **下一步三件事**：① 建目录骨架与 README 项目定位；② 用 8-10 小时补 Transformer 概念层；③ 调研公开数据集并定 JSONL schema。
+- 当前进度：W1（11/4–11/10）起步阶段。状态列按「可验收产出」判定：README 项目定位 + 目录骨架已交付并超额，故记为「完成」；Transformer 概念层 8-10 小时为本周剩余自学项，不阻塞 11/11 进入数据准备。
+- 已生成代码：`pipeline/` 清洗去重采样与质检、`train/` LoRA 配置与实验记录、`eval/` 自动评测与 6 类错误归因、`rag/` 检索拼 Prompt、`serving/` 四端点 + 面向用户工作台 + Dockerfile/compose、`tests/` 与冒烟脚本；CPU 端到端、14 项测试、DeepSeek 联调（`/sql`、`/rag` 真实出结果）均已跑通。
+- 说明：服务化 / RAG 代码属 2 月任务提前完成，按降级规则优先级最低，**不再加功能**；`deepseek-chat` 仅用于联调，不是正式对比实验的 7B 基座。
+- 现有 `eval.jsonl` 是冒烟用 9 条小样本且已冻结；正式实验前须补数据后 `python pipeline/build_sft.py --eval-size 200 --force` 重建，重建后此前所有对比数字作废。
+- 唯一不可替代的产出：2/5 前 `eval/report.md` 对比表与简历 3 个数字，其余均为它服务。
+- **本周剩余三件事**：① 对着工作台把「问题 → schema/RAG 拼 Prompt → 生成 SQL → SQLite 执行 → 结果集比对 → 错误归因 → 回流修数据」讲一遍；② 按第 7 节补 Transformer 概念层（必懂档对照 `pipeline/quality_rules.py`、`train/lora_config.yaml`、`eval/run_eval.py`）；③ 读懂 `data/SCHEMA.md`，为数据准备预热。
+- **下一节点 11/11–11/24**：调研公开数据集并在 `data/raw/DATASETS.md` 记 license；统计 token 长度分布；把 50 条种子样本换成自己数仓的真实样本。
+- **现在不做**：正式 7B LoRA 训练、3 组对比实验、Transformer 推公式 / 手写注意力、高并发后端、人工打分 / rubric / LLM-as-judge、从零预训练。
+- 用户确认产出后，助手按第 6 节只改状态列、本节与变更记录。
 
 ---
 
@@ -205,3 +210,4 @@ llm-portfolio/
 | 日期 | 变更 |
 |---|---|
 | 2026-11-04 | 建立本文件；确定主攻 #4、方案 A、Text-to-SQL 领域、评测最小版、Transformer 概念层边界、时间表与降级规则 |
+| 2026-11-05 | 生成完整代码骨架并跑通 CPU 端到端、14 项测试与 DeepSeek 联调；W1 起步阶段按可验收产出记为「完成」；服务化/RAG 代码属 2 月任务提前完成、状态列仍「待办」；更新第 6 行代码状态与第 9 节当前状态/下一步，新增本周与下一节点任务、禁止事项 |
