@@ -1,0 +1,33 @@
+{
+  "target": 1400,
+  "generated": 1400,
+  "attempts": 3554,
+  "rejected_not_executable": 738,
+  "rejected_same_hash": 58,
+  "rejected_near_duplicate": 883,
+  "sim_limit": 0.84,
+  "by_theme": {
+    "分组统计": 213,
+    "指标口径": 292,
+    "窗口函数": 159,
+    "去重逻辑": 65,
+    "子查询": 250,
+    "JOIN聚合": 305,
+    "CTE/UNION": 116
+  },
+  "by_template": {
+    "JOIN_AGG": 362,
+    "AGG_WHERE": 222,
+    "WINDOW": 159,
+    "POINT_LOOKUP": 135,
+    "GROUP_BY": 94,
+    "SUBQUERY": 250,
+    "MULTI_JOIN": 62,
+    "CTE/UNION": 116
+  },
+  "by_level": {
+    "hard": 842,
+    "medium": 490,
+    "easy": 68
+  }
+}

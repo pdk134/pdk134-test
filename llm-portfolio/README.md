@@ -187,17 +187,24 @@ python eval/run_eval.py --compare     # → eval/report.md 对比表 + 简历 3 
 
 ## 当前代码状态 vs PLAN 时间表
 
-代码骨架已全部就位并可跑通，但**以下产出仍需按 PLAN 由你完成**：
+代码骨架已全部就位并可跑通。已完成 / 未完成如下（2026-11-07 更新）：
 
-- [ ] 下载公开数据集并记录 license（`data/raw/DATASETS.md` 已留表格）
-- [ ] 把仓库自带的 50 条种子样本替换/扩充为**你自己数仓的真实样本**
-- [ ] 补到 1,000–1,500 条训练集、`--eval-size 200` 并在 12/31 前冻结
+- [x] 自建扩充语料 274 条（`scripts/gen_samples.py`）
+- [x] 组合式扩充语料 1,400 条（`scripts/expand_samples.py`，生成阶段按去重规则预筛）
+- [x] 20 条示范业务 SQL（`data/raw/real_samples.jsonl`，`source=sample`，待核对口径后改 `real`）
+- [x] **训练集 1,038 条 + 评测集 200 条已冻结**（`--eval-size 200` 生效）
+- [x] 服务化 / RAG（2 月任务提前完成，按降级规则不再加功能）
+- [ ] 把示范样本核对/替换为**你自己数仓的真实样本**（采集清单见 `data/raw/DATASETS.md`）
+- [ ] 下载公开数据集并记录 license（schema 不匹配需改写 SQL，优先级低）
 - [ ] 租单卡跑通 3 组 LoRA 实验，产出 `report.md` 对比表
-- [ ] 按 2 月时间余量决定 RAG 是否保留
 
-> 仓库里已生成的 `eval.jsonl` 是**冒烟自检用的 9 条小样本**（已被冻结），
-> 正式实验前需补数据后 `python pipeline/build_sft.py --eval-size 200 --force` 重建。
-> 注意：重建后此前所有对比数字作废。
+> 2026-11-07 流水线实测：raw 1,744 条 → 清洗 1,744 → 双重去重 1,613 → 分层采样 1,250 →
+> **训练集 1,038 条 + 评测集 200 条**（sha256 冻结，泄漏校验移除 12 条）。
+> smoke 9/9、pytest 14 passed、`train.py --dry-run` 配置检查通过。
+>
+> **重要**：1,744 条里绝大多数是 self-authored 合成语料，不是真实业务数据。
+> 按 PLAN 混入你自己的真实样本后仍需 `--force` 重建，重建后此前所有对比数字作废。
+> `eval/report.md` 仍是占位，正式对比数字必须来自 1 月的 GPU 实验，不得手写。
 
 ## 边界（PLAN 第 3/4 节）
 

@@ -74,6 +74,11 @@ class APIGenerator(SQLGenerator):
                   'temperature': self.temperature, 'max_tokens': max_tokens},
             timeout=self.timeout
         )
+        if r.status_code >= 400:
+            raise requests.HTTPError(
+                f'{r.status_code} Error for url: {self.base}/chat/completions '
+                f'| model={self.model} | body={r.text[:500]}',
+                response=r)
         r.raise_for_status()
         return r.json()['choices'][0]['message']['content']
 
