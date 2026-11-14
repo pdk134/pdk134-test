@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="月记">
 <meta name="theme-color" content="#e8638c">
-<meta name="description" content="简洁的个人记录工具，数据仅保存在本机">
+<meta name="description" content="简洁的个人记录工具，登录后可在设备间同步">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="icon" type="image/svg+xml" href="icons/favicon.svg">
@@ -16,6 +16,32 @@
 <title>月记</title>
 </head>
 <body>
+<!-- 登录门禁：未登录时盖住整个应用，登录成功后才同步并展示 -->
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <div class="gate-logo">🌙</div>
+    <h2 class="gate-title">月记</h2>
+    <p class="gate-sub" id="gateSub">正在检查登录状态…</p>
+    <form class="gate-form hidden" id="gateForm" novalidate>
+      <label class="gate-field">
+        <span class="gate-label">账号</span>
+        <input class="gate-input" id="gateUser" type="text" placeholder="用户名或邮箱"
+               autocomplete="username" autocapitalize="none" spellcheck="false">
+      </label>
+      <label class="gate-field">
+        <span class="gate-label">密码</span>
+        <input class="gate-input" id="gatePass" type="password" placeholder="至少 6 位"
+               autocomplete="current-password">
+      </label>
+      <p class="gate-error hidden" id="gateError"></p>
+      <button class="gate-btn primary" id="gateSubmit" type="submit">登录</button>
+      <button class="gate-btn ghost" id="gateSwitch" type="button">没有账号？注册一个</button>
+    </form>
+    <button class="gate-btn ghost hidden" id="gateRetry" type="button">刷新页面</button>
+    <p class="gate-foot">登录后记录会在你的设备之间同步</p>
+  </div>
+</div>
+
 <div class="app">
 
   <header class="app-header">
@@ -110,10 +136,39 @@
         <div id="historyList"></div>
       </div>
 
+      <!-- 账号与同步 -->
+      <div class="panel-card">
+        <h3 class="section-title">👤 账号与同步</h3>
+        <p class="panel-desc" id="acctStatus">未登录</p>
+        <div class="data-actions">
+          <button class="action-btn" id="acctLogin">
+            <span class="action-icon">🔑</span>
+            <span>
+              <strong>登录</strong>
+              <small>登录后可跨设备同步</small>
+            </span>
+          </button>
+          <button class="action-btn" id="acctSync" disabled>
+            <span class="action-icon">🔄</span>
+            <span>
+              <strong>立即同步</strong>
+              <small>与云端核对一次</small>
+            </span>
+          </button>
+          <button class="action-btn" id="acctSignOut" disabled>
+            <span class="action-icon">🚪</span>
+            <span>
+              <strong>退出登录</strong>
+              <small>本机记录保留</small>
+            </span>
+          </button>
+        </div>
+      </div>
+
       <!-- 数据管理 -->
       <div class="panel-card">
         <h3 class="section-title">🔒 数据管理</h3>
-        <p class="panel-desc">所有数据仅保存在本机浏览器。建议定期导出备份，以免清理浏览器数据后丢失。</p>
+        <p class="panel-desc">未登录时数据只保存在本机浏览器。建议定期导出备份，以免清理浏览器数据后丢失。</p>
         <div class="data-actions">
           <button class="action-btn" id="exportBtn">
             <span class="action-icon">⬇️</span>
@@ -152,7 +207,7 @@
         <p class="danger-desc">此操作不可撤销，建议先导出备份</p>
       </div>
 
-      <p class="privacy-note">🔒 所有数据仅保存在本机浏览器中，不会上传到任何服务器。</p>
+      <p class="privacy-note">🔒 登录后数据保存在你的私有云端账户中，只有本人能读取；未登录时仅保存在本机浏览器。</p>
     </section>
 
   </main>
@@ -180,7 +235,21 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/app.js"></script>
 <script src="js/features.js"></script>
+<script src="js/config.js"></script>
+<script src="js/cloud.js"></script>
+<script>
+  // 兜底：cloud.js 若因网络/缓存问题没加载，别让用户卡在「正在检查登录状态…」
+  setTimeout(function () {
+    if (!window.PTCloud) {
+      var sub = document.getElementById('gateSub');
+      if (sub) sub.textContent = '登录模块加载失败，请检查网络后刷新';
+      var retry = document.getElementById('gateRetry');
+      if (retry) retry.classList.remove('hidden');
+    }
+  }, 8000);
+</script>
 </body>
 </html>
