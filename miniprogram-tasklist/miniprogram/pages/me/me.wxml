@@ -1,0 +1,39 @@
+<view class="page {{theme === 'dark' ? 'theme-dark' : ''}}">
+
+  <view class="panel-card">
+    <view class="section-title">☁️ 账号与同步</view>
+    <view class="acct-status">{{syncText}}</view>
+    <view class="acct-status">{{openidShort}} · 本机 {{taskCount}} 条任务</view>
+    <view class="action-btn" bindtap="syncNow">
+      立即同步
+      <text class="sub">拉取云端最新任务，并把本机改动推上去</text>
+    </view>
+  </view>
+
+  <view class="panel-card">
+    <view class="section-title">🌸 月记 / 网页版</view>
+    <view class="panel-desc">个人主体小程序不支持内嵌网页。下面的按钮会复制链接，用浏览器打开；也可以把网页版「添加到桌面」，体验和 App 一样。</view>
+    <view class="action-btn" data-url="month" bindtap="copyLink">
+      复制「月记」链接
+      <text class="sub">经期记录与预测。网页版用另一套账号，两边数据暂不互通</text>
+    </view>
+    <view class="action-btn" data-url="task" bindtap="copyLink">
+      复制「任务清单」网页版链接
+      <text class="sub">pdk134.github.io/pdk134-test/tasklist/</text>
+    </view>
+  </view>
+
+  <view class="panel-card">
+    <view class="section-title">🌗 外观</view>
+    <view class="theme-row">
+      <text>深色模式</text>
+      <view class="switch-btn" bindtap="toggleTheme">{{theme === 'dark' ? '已开启' : '已关闭'}}</view>
+    </view>
+  </view>
+
+  <view class="privacy-note">
+    🔒 数据存放在微信云开发数据库，集合权限为「仅创建者可读写」。
+    未开通云开发时自动降级为离线模式，数据只保存在本机。
+  </view>
+
+</view>

@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "日历",
+  "usingComponents": {
+    "task-editor": "/components/task-editor/task-editor"
+  }
+}

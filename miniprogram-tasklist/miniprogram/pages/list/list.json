@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "任务总览",
+  "usingComponents": {
+    "task-editor": "/components/task-editor/task-editor"
+  }
+}
