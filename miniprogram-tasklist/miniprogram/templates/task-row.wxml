@@ -1,0 +1,13 @@
+<!-- 任务行模板：日历页与清单页共用，事件由各自页面的 utils/actions.js 提供 -->
+<template name="taskRow">
+  <view class="task-row {{cls}}" data-id="{{id}}" bindtap="onRowTap">
+    <view class="check" data-id="{{id}}" catchtap="onCheck">{{checked ? '✓' : ''}}</view>
+    <view class="task-main">
+      <text class="task-title">{{title}}</text>
+      <view class="task-tags" wx:if="{{tags.length > 0}}">
+        <text wx:for="{{tags}}" wx:for-item="tag" wx:key="text" class="tag {{tag.type}}">{{tag.text}}</text>
+      </view>
+    </view>
+    <view class="more" data-id="{{id}}" catchtap="onMore">⋯</view>
+  </view>
+</template>

@@ -1,0 +1,49 @@
+<import src="../../templates/task-row.wxml" />
+
+<view class="page {{theme === 'dark' ? 'theme-dark' : ''}}">
+
+  <!-- 日历 -->
+  <view class="card">
+    <view class="cal-head">
+      <view class="nav-btn" bindtap="prevMonth">‹</view>
+      <view class="month-title">{{monthTitle}}</view>
+      <view class="nav-btn" bindtap="nextMonth">›</view>
+    </view>
+    <view class="week-row">
+      <view wx:for="{{weekNames}}" wx:key="*this" class="week-cell">{{item}}</view>
+    </view>
+    <view class="cal-grid">
+      <view wx:for="{{blanks}}" wx:key="*this" class="cal-empty"></view>
+      <view wx:for="{{days}}" wx:key="date" class="cal-cell {{item.cls}}"
+            data-date="{{item.date}}" bindtap="selectDate">
+        <text class="cal-num">{{item.num}}</text>
+        <text wx:if="{{item.badge}}" class="cal-badge">{{item.badge}}</text>
+        <text wx:elif="{{item.dot}}" class="cal-dot"></text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 当天任务 -->
+  <view class="card">
+    <view class="row between">
+      <text class="day-title">{{dayTitle}}</text>
+      <text class="muted" bindtap="addTask">＋ 新建</text>
+    </view>
+    <view class="day-count">{{dayCount}}</view>
+    <view class="task-list">
+      <block wx:for="{{dayTasks}}" wx:key="id">
+        <template is="taskRow" data="{{...item}}" />
+      </block>
+      <view wx:if="{{dayTasks.length === 0}}" class="empty-hint">这一天还没有任务</view>
+    </view>
+    <view class="quick-add">
+      <input class="quick-input" value="{{quickValue}}" placeholder="添加这一天的待办，回车/点＋"
+             confirm-type="done" bindinput="onQuickInput" bindconfirm="quickAdd" />
+      <view class="add-btn" bindtap="quickAdd">＋</view>
+    </view>
+  </view>
+
+</view>
+
+<task-editor visible="{{editorVisible}}" task="{{editorTask}}" default-date="{{editorDate}}"
+             bind:confirm="onEditorConfirm" bind:cancel="onEditorCancel" />

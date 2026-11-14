@@ -1,0 +1,29 @@
+<view wx:if="{{visible}}" class="modal-mask" bindtap="onCancel">
+  <view class="modal" catchtap="noop">
+    <view class="modal-title">{{isEdit ? '编辑任务' : '新建任务'}}</view>
+
+    <view class="form-field">
+      <text class="label">标题</text>
+      <input class="form-input" value="{{title}}" placeholder="要做点什么？"
+             maxlength="200" bindinput="onTitle" />
+    </view>
+
+    <view class="form-field">
+      <text class="label">日期</text>
+      <picker mode="date" value="{{due}}" bindchange="onDue">
+        <view class="form-input" style="line-height: 76rpx;">{{due}}</view>
+      </picker>
+    </view>
+
+    <view class="form-field">
+      <text class="label">备注（可选）</text>
+      <textarea class="form-textarea" value="{{note}}" placeholder="补充说明"
+                maxlength="2000" bindinput="onNote" />
+    </view>
+
+    <view class="form-actions">
+      <view class="modal-btn ghost" bindtap="onCancel">取消</view>
+      <view class="modal-btn primary" bindtap="onSave">保存</view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,31 @@
+{
+  "pages": [
+    "pages/calendar/calendar",
+    "pages/list/list",
+    "pages/me/me"
+  ],
+  "window": {
+    "navigationBarTitleText": "任务清单",
+    "navigationBarBackgroundColor": "#2f9e8f",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f4faf9",
+    "backgroundTextStyle": "light"
+  },
+  "tabBar": {
+    "color": "#8aa0a6",
+    "selectedColor": "#2f9e8f",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      { "pagePath": "pages/calendar/calendar", "text": "日历",
+        "iconPath": "images/calendar.png", "selectedIconPath": "images/calendar-on.png" },
+      { "pagePath": "pages/list/list", "text": "清单",
+        "iconPath": "images/list.png", "selectedIconPath": "images/list-on.png" },
+      { "pagePath": "pages/me/me", "text": "我的",
+        "iconPath": "images/me.png", "selectedIconPath": "images/me-on.png" }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

@@ -1,0 +1,39 @@
+<import src="../../templates/task-row.wxml" />
+
+<view class="page {{theme === 'dark' ? 'theme-dark' : ''}}">
+
+  <view class="header-sub">{{headerSub}}</view>
+
+  <view class="stat-row">
+    <view class="stat-card"><text class="num">{{statTodo}}</text><text class="label">今日待办</text></view>
+    <view class="stat-card"><text class="num">{{statDone}}</text><text class="label">今日完成</text></view>
+    <view class="stat-card"><text class="num">{{statRate}}</text><text class="label">本周完成率</text></view>
+  </view>
+
+  <block wx:for="{{groups}}" wx:key="key" wx:for-item="group">
+    <view class="group-card">
+      <view class="group-head" data-group="{{group.key}}" bindtap="toggleGroup">
+        <text>{{group.label}}</text>
+        <text class="group-count">{{group.count}}</text>
+      </view>
+      <view class="task-list">
+        <block wx:for="{{group.tasks}}" wx:key="id">
+          <template is="taskRow" data="{{...item}}" />
+        </block>
+      </view>
+      <view wx:if="{{group.collapsed}}" class="expand-btn" bindtap="expandDone">
+        展开全部 {{group.count}} 项 ▾
+      </view>
+    </view>
+  </block>
+
+  <view wx:if="{{groups.length === 0}}" class="card">
+    <view class="empty-hint">还没有任务，去日历挑一天安排上吧</view>
+  </view>
+
+  <view class="add-btn" style="text-align:center;" bindtap="addTask">＋ 新建任务</view>
+
+</view>
+
+<task-editor visible="{{editorVisible}}" task="{{editorTask}}" default-date="{{editorDate}}"
+             bind:confirm="onEditorConfirm" bind:cancel="onEditorCancel" />
