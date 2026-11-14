@@ -41,6 +41,10 @@ jobs:
             mkdir -p site/period-tracker
             cp -r period-tracker/. site/period-tracker/
           fi
+          if [ -d tasklist ]; then
+            mkdir -p site/tasklist
+            cp -r tasklist/. site/tasklist/
+          fi
           echo "已组装待发布内容："
           find site -maxdepth 2 -type f | sort
 
@@ -104,6 +108,21 @@ jobs:
             echo "月记环境：$ENV"
           else
             echo "::warning::未找到 $PTCFG，跳过月记环境替换"
+          fi
+
+          # 任务清单与月记共用同一套 Supabase 项目，开关是 window.TASK_SUPABASE_ENV
+          TLCFG=site/tasklist/js/config.js
+          if [ -f "$TLCFG" ]; then
+            cp "$TLCFG" /tmp/tl-config.js.bak
+            sed -i -E "s|window\.TASK_SUPABASE_ENV[[:space:]]*=[[:space:]]*'[a-zA-Z]+'|window.TASK_SUPABASE_ENV = '$ENV'|" "$TLCFG"
+            if ! grep -q "window.TASK_SUPABASE_ENV = '$ENV'" "$TLCFG"; then
+              echo "::error::任务清单 TASK_SUPABASE_ENV 替换失败，config.js 写法与脚本不匹配"
+              grep -n "TASK_SUPABASE_ENV" "$TLCFG" || echo "(未找到 TASK_SUPABASE_ENV)"
+              cp /tmp/tl-config.js.bak "$TLCFG"; exit 1
+            fi
+            echo "任务清单环境：$ENV"
+          else
+            echo "::warning::未找到 $TLCFG，跳过任务清单环境替换"
           fi
 
       - name: Setup Pages
