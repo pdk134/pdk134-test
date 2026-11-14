@@ -878,3 +878,15 @@ body.locked { overflow: hidden; }
   margin-top: 14px;
   line-height: 1.6;
 }
+
+/* ===== 头部板块跳转链接 ===== */
+.header-actions { display: flex; align-items: center; gap: 9px; }
+.header-app-link {
+  font-size: 0.75rem;
+  color: #fff;
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.22);
+  padding: 6px 11px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
