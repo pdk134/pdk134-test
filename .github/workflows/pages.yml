@@ -90,6 +90,22 @@ jobs:
           echo "环境：$ENV（已移除 $OTHER）"
           grep -oE "https://[a-z0-9]+\.supabase\.co" "$CFG" | sort -u
 
+          # 月记（period-tracker）与学习通共用同一套 Supabase 项目，
+          # 但配置是独立文件，开关是 window.PT_SUPABASE_ENV，这里一并替换。
+          PTCFG=site/period-tracker/js/config.js
+          if [ -f "$PTCFG" ]; then
+            cp "$PTCFG" /tmp/pt-config.js.bak
+            sed -i -E "s|window\.PT_SUPABASE_ENV[[:space:]]*=[[:space:]]*'[a-zA-Z]+'|window.PT_SUPABASE_ENV = '$ENV'|" "$PTCFG"
+            if ! grep -q "window.PT_SUPABASE_ENV = '$ENV'" "$PTCFG"; then
+              echo "::error::月记 PT_SUPABASE_ENV 替换失败，config.js 写法与脚本不匹配"
+              grep -n "PT_SUPABASE_ENV" "$PTCFG" || echo "(未找到 PT_SUPABASE_ENV)"
+              cp /tmp/pt-config.js.bak "$PTCFG"; exit 1
+            fi
+            echo "月记环境：$ENV"
+          else
+            echo "::warning::未找到 $PTCFG，跳过月记环境替换"
+          fi
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
         with:

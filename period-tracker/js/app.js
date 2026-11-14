@@ -92,6 +92,8 @@ function saveState() {
     dailyLogs: state.dailyLogs
   };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  // 已登录时顺带把改动推到云端（cloud.js 未加载时静默跳过）
+  if (window.PTCloud) window.PTCloud.schedulePush();
 }
 
 /* ---------- 周期计算 ---------- */
