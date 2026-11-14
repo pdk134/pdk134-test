@@ -1,12 +1,12 @@
 /* =========================================================
- * 经期小助手 - Service Worker
+ * 月记 - Service Worker
  * 策略：
  *   - 应用外壳（HTML/CSS/JS）采用「网络优先」，确保更新及时
  *   - 网络失败时回退到缓存，实现离线可用
  *   - 缓存名带版本号，升级时自动清理旧缓存
  * ========================================================= */
 
-const CACHE_NAME = 'period-tracker-v1';
+const CACHE_NAME = 'period-tracker-v2';
 
 const APP_SHELL = [
   './',

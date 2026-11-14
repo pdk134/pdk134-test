@@ -1,7 +1,7 @@
 {
-  "name": "经期小助手",
-  "short_name": "经期助手",
-  "description": "简洁的经期记录与预测工具，数据仅保存在本机，支持离线使用",
+  "name": "月记",
+  "short_name": "月记",
+  "description": "简洁的个人记录工具，数据仅保存在本机，支持离线使用",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
