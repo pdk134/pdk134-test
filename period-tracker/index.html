@@ -165,30 +165,6 @@
         </div>
       </div>
 
-      <!-- 数据管理 -->
-      <div class="panel-card">
-        <h3 class="section-title">🔒 数据管理</h3>
-        <p class="panel-desc">未登录时数据只保存在本机浏览器。建议定期导出备份，以免清理浏览器数据后丢失。</p>
-        <div class="data-actions">
-          <button class="action-btn" id="exportBtn">
-            <span class="action-icon">⬇️</span>
-            <span>
-              <strong>导出备份</strong>
-              <small>保存为 JSON 文件</small>
-            </span>
-          </button>
-          <button class="action-btn" id="importBtn">
-            <span class="action-icon">⬆️</span>
-            <span>
-              <strong>导入恢复</strong>
-              <small>从备份文件还原</small>
-            </span>
-          </button>
-        </div>
-        <input type="file" id="importFile" accept=".json,application/json" hidden>
-        <p class="data-meta" id="dataMeta"></p>
-      </div>
-
       <!-- 提醒设置 -->
       <div class="panel-card">
         <h3 class="section-title">🔔 提醒设置</h3>
@@ -204,7 +180,7 @@
 
       <div class="danger-card">
         <button class="danger-btn" id="clearBtn">清空所有数据</button>
-        <p class="danger-desc">此操作不可撤销，建议先导出备份</p>
+        <p class="danger-desc">此操作不可撤销，云端记录也会一并清除</p>
       </div>
 
       <p class="privacy-note">🔒 登录后数据保存在你的私有云端账户中，只有本人能读取；未登录时仅保存在本机浏览器。</p>
