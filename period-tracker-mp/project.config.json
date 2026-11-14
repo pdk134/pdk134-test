@@ -1,7 +1,7 @@
 {
   "description": "任务清单小程序（个人主体 · 微信云开发）",
   "appid": "touristappid",
-  "projectname": "tasklist-miniprogram",
+  "projectname": "period-tracker-mp",
   "miniprogramRoot": "miniprogram/",
   "cloudfunctionRoot": "cloudfunctions/",
   "compileType": "miniprogram",
