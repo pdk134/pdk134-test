@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="任务清单">
+  <meta name="theme-color" content="#2f9e8f">
+  <meta name="description" content="在日历上安排你的每一天：添加待办、标记完成、灵活延期">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="icon" type="image/svg+xml" href="icons/favicon.svg">
+  <link rel="stylesheet" href="css/style.css">
+  <title>任务清单</title>
+</head>
+<body>
+
+<!-- ===== 登录门禁 ===== -->
+<div id="gate" class="gate">
+  <div class="gate-card">
+    <div class="gate-logo">✓</div>
+    <h1 class="gate-title">任务清单</h1>
+    <p class="gate-sub" id="gateSub"></p>
+    <form id="gateForm" class="gate-form">
+      <label class="gate-field">
+        <span class="gate-label">用户名 / 邮箱</span>
+        <input id="gateUser" class="gate-input" autocomplete="username"
+               placeholder="学习通、月记的用户名都可以">
+      </label>
+      <label class="gate-field">
+        <span class="gate-label">密码</span>
+        <input id="gatePass" type="password" class="gate-input"
+               autocomplete="current-password" placeholder="至少 6 位">
+      </label>
+      <p id="gateError" class="gate-error hidden"></p>
+      <button id="gateSubmit" type="submit" class="gate-btn primary">登录</button>
+      <button id="gateSwitch" type="button" class="gate-btn ghost">没有账号？注册一个</button>
+    </form>
+    <button id="gateRetry" type="button" class="gate-btn ghost hidden">重新加载</button>
+    <p class="gate-foot">同一账号通用于学习通与月记<br>任务云端同步，仅自己可见</p>
+  </div>
+</div>
+
+<div class="app">
+
+  <header class="app-header">
+    <div class="header-main">
+      <h1>✓ 任务清单</h1>
+      <p class="header-sub" id="headerSub"></p>
+    </div>
+    <a class="header-link" id="toMonth" href="../period-tracker/">🌸 月记</a>
+  </header>
+
+  <main class="pages">
+
+    <!-- ===== 日历页 ===== -->
+    <section id="page-calendar" class="page active">
+      <div class="card month-nav">
+        <button class="nav-btn" id="prevMonth" aria-label="上个月">‹</button>
+        <div class="month-title" id="monthTitle"></div>
+        <button class="nav-btn" id="nextMonth" aria-label="下个月">›</button>
+      </div>
+
+      <div class="card cal-card">
+        <div class="weekdays">
+          <span>一</span><span>二</span><span>三</span><span>四</span>
+          <span>五</span><span>六</span><span>日</span>
+        </div>
+        <div class="calendar-grid" id="calGrid"></div>
+      </div>
+
+      <div class="card day-panel">
+        <div class="day-panel-head">
+          <h3 id="dayTitle"></h3>
+          <span class="day-count" id="dayCount"></span>
+        </div>
+        <ul class="task-list" id="dayTasks"></ul>
+        <form class="quick-add" id="quickAddForm">
+          <input id="quickAddInput" class="quick-input" maxlength="200"
+                 placeholder="添加任务，回车保存" autocomplete="off">
+          <button type="submit" class="quick-btn" aria-label="添加">＋</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ===== 清单总览页 ===== -->
+    <section id="page-list" class="page">
+      <div class="stats-row">
+        <div class="stat-card">
+          <strong id="statTodo">0</strong><span>今日待办</span>
+        </div>
+        <div class="stat-card">
+          <strong id="statDone">0</strong><span>今日完成</span>
+        </div>
+        <div class="stat-card">
+          <strong id="statRate">–</strong><span>本周完成率</span>
+        </div>
+      </div>
+
+      <button class="add-task-btn" id="addTaskBtn">＋ 新建任务</button>
+
+      <div id="taskGroups"></div>
+    </section>
+
+    <!-- ===== 我的 ===== -->
+    <section id="page-me" class="page">
+      <div class="panel-card">
+        <h3 class="section-title">👤 账号与同步</h3>
+        <p class="acct-status" id="acctStatus"></p>
+        <div class="data-actions">
+          <button class="action-btn" id="acctSync">
+            <span class="action-icon">🔄</span>
+            <span><strong>立即同步</strong><small>拉取云端最新任务</small></span>
+          </button>
+          <button class="action-btn" id="acctSignOut">
+            <span class="action-icon">🚪</span>
+            <span><strong>退出登录</strong><small>本机数据会保留</small></span>
+          </button>
+        </div>
+        <button class="acct-login hidden" id="acctLogin">去登录</button>
+      </div>
+
+      <div class="panel-card">
+        <h3 class="section-title">🌸 月记</h3>
+        <p class="panel-desc">经期记录与预测。同一账号，数据独立保存。</p>
+        <a class="month-link" href="../period-tracker/">打开月记 →</a>
+      </div>
+
+      <div class="panel-card">
+        <h3 class="section-title">🌗 外观</h3>
+        <div class="theme-row">
+          <span>深色模式</span>
+          <button class="theme-toggle" id="themeToggle" aria-label="切换深色模式"></button>
+        </div>
+      </div>
+
+      <p class="privacy-note">🔒 任务保存在云端数据库，仅登录账号本人可见。</p>
+    </section>
+
+  </main>
+
+  <nav class="tab-bar">
+    <button class="tab-btn active" data-page="calendar"><span class="tab-icon">📅</span>日历</button>
+    <button class="tab-btn" data-page="list"><span class="tab-icon">📋</span>清单</button>
+    <button class="tab-btn" data-page="me"><span class="tab-icon">👤</span>我的</button>
+  </nav>
+</div>
+
+<!-- ===== 任务操作菜单 ===== -->
+<div id="actionSheet" class="sheet-mask hidden">
+  <div class="sheet" id="sheetBox">
+    <h3 id="sheetTitle"></h3>
+    <button class="sheet-btn" data-act="toggle" id="sheetToggle">✓ 标记完成</button>
+    <button class="sheet-btn" data-act="defer1">⏭ 延到明天</button>
+    <button class="sheet-btn" data-act="defer3">⏭ 延 3 天</button>
+    <button class="sheet-btn" data-act="defer7">⏭ 延一周</button>
+    <button class="sheet-btn" data-act="pick">📅 选个日期…</button>
+    <button class="sheet-btn" data-act="edit">✏️ 编辑</button>
+    <button class="sheet-btn danger" data-act="delete">🗑 删除</button>
+    <button class="sheet-btn ghost" data-act="cancel">取消</button>
+  </div>
+</div>
+
+<!-- ===== 新建 / 编辑弹窗 ===== -->
+<div id="editModal" class="modal-mask hidden">
+  <form class="modal" id="editForm">
+    <h3 id="editModalTitle">新建任务</h3>
+    <label class="edit-field">
+      <span>标题</span>
+      <input id="editTitleInput" maxlength="200" required placeholder="要做什么？">
+    </label>
+    <label class="edit-field">
+      <span>备注（可选）</span>
+      <textarea id="editNote" rows="2" maxlength="2000" placeholder="补充说明…"></textarea>
+    </label>
+    <label class="edit-field">
+      <span>日期</span>
+      <input id="editDate" type="date" required>
+    </label>
+    <p id="editError" class="gate-error hidden"></p>
+    <div class="edit-actions">
+      <button type="button" class="modal-btn ghost" id="editCancel">取消</button>
+      <button type="submit" class="modal-btn primary" id="editSave">保存</button>
+    </div>
+  </form>
+</div>
+
+<!-- ===== 日期选择弹窗（延期用） ===== -->
+<div id="dateModal" class="modal-mask hidden">
+  <form class="modal" id="dateForm">
+    <h3>延期到哪天？</h3>
+    <label class="edit-field">
+      <span>新日期</span>
+      <input id="datePick" type="date" required>
+    </label>
+    <div class="edit-actions">
+      <button type="button" class="modal-btn ghost" id="dateCancel">取消</button>
+      <button type="submit" class="modal-btn primary" id="dateSave">确定</button>
+    </div>
+  </form>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/store.js"></script>
+<script src="js/cloud.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
