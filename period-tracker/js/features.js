@@ -1,7 +1,7 @@
 /* =========================================================
  * 月记 - 增强功能模块
  * 依赖 app.js 暴露的 window.PT 接口
- * 包含：数据导出/导入、深色模式、经期提醒、清空数据、通用提示
+ * 包含：深色模式、经期提醒、清空数据、通用提示
  * ========================================================= */
 
 'use strict';
@@ -16,7 +16,6 @@
   const { state, saveState, renderAll, fmt, parseDate, addDays, diffDays, today, fmtCN } = PT;
 
   const SETTINGS_KEY = 'periodTracker.settings';
-  const BACKUP_VERSION = 2;
 
   /* ================= 通用 UI ================= */
 
@@ -119,204 +118,6 @@
     saveSettings();
     applyTheme();
     toast('已切换到' + THEME_LABEL[settings.theme]);
-  }
-
-  /* ================= 数据导出 / 导入 ================= */
-
-  function buildBackup() {
-    const periods = PT.getPeriods();
-    return {
-      app: 'period-tracker',
-      version: BACKUP_VERSION,
-      exportedAt: new Date().toISOString(),
-      summary: {
-        periodCount: periods.length,
-        markedDays: state.periodDays.size,
-        closedCount: state.closedPeriods.size,
-        logDays: Object.keys(state.dailyLogs).length
-      },
-      data: {
-        periodDays: [...state.periodDays],
-        closedPeriods: [...state.closedPeriods],
-        dailyLogs: state.dailyLogs,
-        settings: { theme: settings.theme, remind: settings.remind }
-      }
-    };
-  }
-
-  function exportData() {
-    if (state.periodDays.size === 0 && Object.keys(state.dailyLogs).length === 0) {
-      toast('还没有可导出的数据', 'warn');
-      return;
-    }
-
-    const backup = buildBackup();
-    const json = JSON.stringify(backup, null, 2);
-    const blob = new Blob([json], { type: 'application/json;charset=utf-8' });
-
-    const d = today();
-    const name = '经期记录备份_' + d.getFullYear() +
-      String(d.getMonth() + 1).padStart(2, '0') +
-      String(d.getDate()).padStart(2, '0') + '.json';
-
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = name;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-
-    toast('已导出 ' + backup.summary.periodCount + ' 次经期记录');
-  }
-
-  // 校验并解析备份内容
-  function parseBackup(text) {
-    let obj;
-    try {
-      obj = JSON.parse(text);
-    } catch (e) {
-      return { ok: false, error: '文件不是有效的 JSON，可能已损坏' };
-    }
-
-    // 兼容两种结构：带 data 包装的，或直接的裸数据
-    let periodDays, dailyLogs, closedPeriods;
-    if (obj && obj.data && (obj.data.periodDays || obj.data.dailyLogs)) {
-      periodDays = obj.data.periodDays || [];
-      closedPeriods = obj.data.closedPeriods || [];
-      dailyLogs = obj.data.dailyLogs || {};
-    } else if (obj && (obj.periodDays || obj.dailyLogs)) {
-      periodDays = obj.periodDays || [];
-      closedPeriods = obj.closedPeriods || [];
-      dailyLogs = obj.dailyLogs || {};
-    } else {
-      return { ok: false, error: '文件中没有找到经期数据，请确认选择了正确的备份文件' };
-    }
-
-    if (!Array.isArray(periodDays)) {
-      return { ok: false, error: '经期数据格式不正确' };
-    }
-
-    // 过滤掉非法日期
-    const dateRe = /^\d{4}-\d{2}-\d{2}$/;
-    const validDays = periodDays.filter(s => typeof s === 'string' && dateRe.test(s));
-    if (validDays.length !== periodDays.length) {
-      console.warn('已过滤 ' + (periodDays.length - validDays.length) + ' 条非法日期');
-    }
-
-    return { ok: true, periodDays: validDays, closedPeriods: closedPeriods, dailyLogs: dailyLogs, meta: obj };
-  }
-
-  function importData() {
-    const input = PT.$('importFile');
-    input.value = '';       // 允许重复选择同一文件
-    input.click();
-  }
-
-  async function handleImportFile(file) {
-    if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      toast('文件过大，可能不是备份文件', 'warn');
-      return;
-    }
-
-    let text;
-    try {
-      text = await file.text();
-    } catch (e) {
-      toast('读取文件失败', 'warn');
-      return;
-    }
-
-    const res = parseBackup(text);
-    if (!res.ok) {
-      await confirmDialog('导入失败', res.error, '知道了');
-      return;
-    }
-
-    const incomingCount = new Set(res.periodDays).size;
-    const incomingLogs = Object.keys(res.dailyLogs || {}).length;
-    const hasExisting = state.periodDays.size > 0 || Object.keys(state.dailyLogs).length > 0;
-
-    let mode = 'replace';
-    if (hasExisting) {
-      const merge = await confirmDialog(
-        '导入备份',
-        '备份中包含 ' + incomingCount + ' 天经期记录、' + incomingLogs + ' 天日记。\n\n' +
-        '当前已有数据：' + state.periodDays.size + ' 天经期、' +
-        Object.keys(state.dailyLogs).length + ' 天日记。\n\n' +
-        '选择「合并」会保留双方数据；选择「取消」则不导入。',
-        '合并导入'
-      );
-      if (!merge) return;
-      mode = 'merge';
-    }
-
-    if (mode === 'merge') {
-      res.periodDays.forEach(d => state.periodDays.add(d));
-      if (res.closedPeriods) res.closedPeriods.forEach(d => state.closedPeriods.add(d));
-      Object.keys(res.dailyLogs || {}).forEach(k => {
-        const inc = res.dailyLogs[k];
-        const cur = state.dailyLogs[k];
-        if (!cur) {
-          state.dailyLogs[k] = inc;
-        } else {
-          // 合并字段
-          const merged = new Set([...(cur.symptoms || []), ...(inc.symptoms || [])]);
-          state.dailyLogs[k] = {
-            symptoms: [...merged],
-            mood: cur.mood || inc.mood || '',
-            note: cur.note && inc.note ? (cur.note + '\n' + inc.note) : (cur.note || inc.note || '')
-          };
-        }
-      });
-    } else {
-      state.periodDays = new Set(res.periodDays);
-      state.closedPeriods = new Set(res.closedPeriods || []);
-      state.dailyLogs = res.dailyLogs || {};
-    }
-
-    // 顺带恢复设置
-    if (res.meta && res.meta.data && res.meta.data.settings) {
-      if (res.meta.data.settings.theme) settings.theme = res.meta.data.settings.theme;
-    }
-
-    saveSettings();
-    saveState();
-    applyTheme();
-    renderAll();
-    updateDataMeta();
-
-    toast('导入成功：' + mode === 'merge' ? '已合并 ' + incomingCount + ' 天记录' : '已恢复 ' + incomingCount + ' 天记录');
-  }
-
-  /* ================= 数据摘要 ================= */
-
-  function updateDataMeta() {
-    const el = PT.$('dataMeta');
-    if (!el) return;
-
-    const periods = PT.getPeriods();
-    const logDays = Object.keys(state.dailyLogs).length;
-
-    if (periods.length === 0 && logDays === 0) {
-      el.textContent = '当前暂无数据';
-      return;
-    }
-
-    const first = periods.length ? parseDate(periods[0].start) : null;
-    const last = periods.length ? parseDate(periods[periods.length - 1].start) : null;
-
-    let text = '共 ' + periods.length + ' 次经期 · ' + state.periodDays.size +
-      ' 天经期 · ' + logDays + ' 天日记';
-    if (state.closedPeriods.size > 0) {
-      text += ' · ' + state.closedPeriods.size + ' 次已结束';
-    }
-    if (first && last) {
-      text += '（' + fmtCN(first) + ' 起）';
-    }
-    el.textContent = text;
   }
 
   /* ================= 经期提醒 ================= */
@@ -475,8 +276,8 @@
     // 二次确认，避免误删
     const sure = await confirmDialog(
       '再次确认',
-      '数据删除后无法恢复。如果还没备份，建议先取消并导出备份。',
-      '我已备份，清空'
+      '数据删除后无法恢复，云端记录也会一并清除。确定要继续吗？',
+      '确认清空'
     );
     if (!sure) return;
 
@@ -485,7 +286,6 @@
     state.dailyLogs = {};
     saveState();
     renderAll();
-    updateDataMeta();
     toast('已清空所有数据');
   }
 
@@ -502,22 +302,6 @@
       const onChange = () => { if (settings.theme === 'auto') applyTheme(); };
       if (mq.addEventListener) mq.addEventListener('change', onChange);
       else if (mq.addListener) mq.addListener(onChange);
-    }
-
-    // 导出
-    const exportBtn = PT.$('exportBtn');
-    if (exportBtn) exportBtn.addEventListener('click', exportData);
-
-    // 导入
-    const importBtn = PT.$('importBtn');
-    if (importBtn) importBtn.addEventListener('click', importData);
-
-    const fileInput = PT.$('importFile');
-    if (fileInput) {
-      fileInput.addEventListener('change', e => {
-        const file = e.target.files && e.target.files[0];
-        handleImportFile(file);
-      });
     }
 
     // 提醒开关
@@ -537,11 +321,10 @@
     const clearBtn = PT.$('clearBtn');
     if (clearBtn) clearBtn.addEventListener('click', clearAllData);
 
-    // 切到统计页时刷新数据摘要
+    // 切到统计页时刷新提醒状态
     document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         if (btn.dataset.page === 'stats') {
-          updateDataMeta();
           updateRemindStatus();
         }
       });
@@ -567,7 +350,6 @@
     loadSettings();
     applyTheme();
     bindFeatureEvents();
-    updateDataMeta();
     updateRemindStatus();
     renderRemindBanner();
     setupPWA();
@@ -586,7 +368,6 @@
   window.PTFeatures = {
     analyzeCycle: () => PT.getPeriods() && null,  // 占位，实际分析在 app.js
     getRemindInfo,
-    exportData,
     toast,
     confirmDialog
   };
