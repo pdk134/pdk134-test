@@ -466,7 +466,8 @@
     const ok = await confirmDialog(
       '清空所有数据',
       '将删除全部 ' + state.periodDays.size + ' 天经期记录和 ' +
-      Object.keys(state.dailyLogs).length + ' 天日记。\n\n此操作不可撤销，确定要继续吗？',
+      Object.keys(state.dailyLogs).length + ' 天日记。\n\n' +
+      '已登录时，云端记录也会一并清除。此操作不可撤销，确定要继续吗？',
       '确认清空'
     );
     if (!ok) return;
@@ -480,6 +481,7 @@
     if (!sure) return;
 
     state.periodDays = new Set();
+    state.closedPeriods = new Set();
     state.dailyLogs = {};
     saveState();
     renderAll();
