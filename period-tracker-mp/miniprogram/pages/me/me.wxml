@@ -1,14 +1,10 @@
 <view class="page {{theme === 'dark' ? 'theme-dark' : ''}}">
 
   <view class="panel-card">
-    <view class="section-title">☁️ 账号与同步</view>
+    <view class="section-title">☁️ 同步状态</view>
     <view class="acct-status">任务清单：{{syncText}}</view>
     <view class="acct-status">月记：{{periodSyncText}}</view>
     <view class="acct-status">{{openidShort}} · 本机 {{taskCount}} 条任务 / {{periodCount}} 段经期</view>
-    <view class="action-btn" bindtap="syncNow">
-      立即同步
-      <text class="sub">同时同步任务清单和月记，拉取最新数据并推上本机改动</text>
-    </view>
   </view>
 
   <view class="panel-card">
@@ -19,9 +15,25 @@
     </view>
   </view>
 
-  <view class="privacy-note">
-    🔒 数据存放在微信云开发数据库（tasks / period_data 两个集合），权限均为「仅创建者可读写」。
-    未开通云开发时自动降级为离线模式，数据只保存在本机。
+  <view class="panel-card">
+    <view class="section-title">⏰ 待办提醒</view>
+    <view class="theme-row">
+      <text>提前 1 天提醒</text>
+      <view class="switch-btn" bindtap="toggleRemind">{{remindEnabled ? '已开启' : '已关闭'}}</view>
+    </view>
+    <view class="acct-status">新建任务时申请微信通知授权；一次性订阅，授权一次可接收一条提醒</view>
+    <view class="action-btn" bindtap="sendTestRemind">
+      发送测试提醒
+      <text class="sub">从小程序内触发，立即给自己发一条</text>
+    </view>
+  </view>
+
+  <view class="panel-card">
+    <view class="section-title">ℹ️ 关于</view>
+    <view class="action-btn" bindtap="goAbout">
+      关于本小程序
+      <text class="sub">功能说明、常见问题与意见反馈</text>
+    </view>
   </view>
 
 </view>

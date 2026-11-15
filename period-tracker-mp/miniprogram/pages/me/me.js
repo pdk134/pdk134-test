@@ -2,6 +2,7 @@ var Cloud = require('../../utils/cloud.js');
 var Store = require('../../utils/store.js');
 var PeriodCloud = require('../../utils/period-cloud.js');
 var PeriodStore = require('../../utils/period-store.js');
+var Remind = require('../../utils/remind.js');
 
 Page({
   data: {
@@ -11,11 +12,12 @@ Page({
     openidShort: '',
     taskCount: 0,
     periodCount: 0,
-    cloudReady: false
+    cloudReady: false,
+    remindEnabled: true
   },
 
   onLoad: function () {
-    this.setData({ theme: getApp().globalData.theme });
+    this.setData({ theme: getApp().globalData.theme, remindEnabled: Remind.enabled() });
     Cloud.onChange(function () { this.updateStatus(); }.bind(this));
     PeriodCloud.onChange(function () { this.updateStatus(); }.bind(this));
     Cloud.init().then(function () { this.updateStatus(); }.bind(this));
@@ -60,14 +62,19 @@ Page({
     });
   },
 
-  syncNow: function () {
-    var self = this;
-    wx.showLoading({ title: '同步中' });
-    Promise.all([Cloud.pull(false), PeriodCloud.pull(false)]).then(function () {
-      wx.hideLoading();
-      self.updateStatus();
-      wx.showToast({ title: '同步完成', icon: 'none', duration: 1500 });
-    });
+  goAbout: function () {
+    wx.navigateTo({ url: '/pages/about/about' });
+  },
+
+  sendTestRemind: function () {
+    Remind.sendTest();
+  },
+
+  toggleRemind: function () {
+    var next = !this.data.remindEnabled;
+    Remind.setEnabled(next);
+    this.setData({ remindEnabled: next });
+    wx.showToast({ title: next ? '已开启提醒' : '已关闭提醒', icon: 'none', duration: 1200 });
   },
 
   toggleTheme: function () {

@@ -36,7 +36,17 @@ const CFG = {
   // 月记
   PERIOD_COLLECTION: 'period_data',
   PERIOD_STORAGE_PREFIX: 'periodTracker.mp.v1',
-  PERIOD_SCOPE_KEY: 'periodTracker.mp.scope'
+  PERIOD_SCOPE_KEY: 'periodTracker.mp.scope',
+
+  // 关于页展示信息（发布新版本时改这里；线上版本会优先取微信的版本号）
+  APP_NAME: '清单月记',
+  APP_DESC: '把待办清单和经期记录放在一起的轻量小工具',
+  APP_VERSION: '1.0.0',
+
+  // 待办提醒（微信一次性订阅消息）
+  // 模板 ID 来自：mp.weixin.qq.com → 功能 → 订阅消息 → 我的模板；每个小程序唯一
+  // 提前天数、模板字段名、发送时间等配置在 cloudfunctions/remind/index.js 顶部
+  REMIND_TMPL_ID: 'EPvaF7BUcvy5Pg5bseZBDJgtReOba0EMGvssnkkaoA8'
 };
 
 module.exports = CFG;

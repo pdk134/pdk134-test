@@ -1,0 +1,49 @@
+<view class="page {{theme === 'dark' ? 'theme-dark' : ''}}">
+
+  <view class="panel-card about-hero">
+    <view class="about-logo">🌿</view>
+    <view class="about-name">{{appName}}</view>
+    <view class="about-version">版本 {{version}}</view>
+    <view class="about-desc">{{appDesc}}</view>
+  </view>
+
+  <view class="panel-card">
+    <view class="section-title">✨ 能做什么</view>
+    <view class="feat-row" wx:for="{{features}}" wx:key="title">
+      <view class="feat-icon">{{item.icon}}</view>
+      <view class="feat-text">
+        <view class="feat-title">{{item.title}}</view>
+        <view class="feat-sub">{{item.sub}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="panel-card">
+    <view class="section-title">❓ 常见问题</view>
+    <block wx:for="{{faqs}}" wx:key="q" wx:for-index="idx">
+      <view class="faq-q" data-idx="{{idx}}" bindtap="toggleFaq">
+        <text>{{item.q}}</text>
+        <text class="faq-arrow">{{activeIndex === idx ? '−' : '＋'}}</text>
+      </view>
+      <view wx:if="{{activeIndex === idx}}" class="faq-a">{{item.a}}</view>
+    </block>
+  </view>
+
+  <view class="panel-card">
+    <view class="section-title">💬 帮助与反馈</view>
+    <button class="action-btn" open-type="contact">
+      联系客服 / 提建议
+      <text class="sub">遇到问题或有想法，可以直接留言</text>
+    </button>
+    <view class="action-btn" bindtap="copyInfo">
+      复制版本信息
+      <text class="sub">反馈问题时附上，方便定位</text>
+    </view>
+  </view>
+
+  <view class="about-foot">
+    经期预测基于历史记录推算，仅供参考，不构成医疗诊断或建议。
+    本小程序不获取头像、昵称等个人信息。
+  </view>
+
+</view>

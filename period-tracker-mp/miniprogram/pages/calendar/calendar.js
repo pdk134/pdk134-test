@@ -1,6 +1,7 @@
 var Store = require('../../utils/store.js');
 var Cloud = require('../../utils/cloud.js');
 var Actions = require('../../utils/actions.js');
+var Remind = require('../../utils/remind.js');
 
 var WEEK = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
 
@@ -14,6 +15,8 @@ Page(Object.assign({
     blanks: [], days: [],
     selectedDate: '', dayTitle: '', dayCount: '', dayTasks: [],
     quickValue: '',
+    swipeOpenPath: '',
+    deferForId: '', deferDays: 1,
     editorVisible: false, editorId: '', editorTask: null, editorDate: ''
   },
 
@@ -28,6 +31,7 @@ Page(Object.assign({
     var t = getApp().globalData.theme;
     if (t !== this.data.theme) this.setData({ theme: t });
     if (Cloud.state().cloudReady) Cloud.pull(true);
+    this.setData({ deferForId: '', deferDays: 1 });
     this.refresh();
   },
 
@@ -85,7 +89,14 @@ Page(Object.assign({
       dayTitle: (d.getMonth() + 1) + '月' + d.getDate() + '日 · ' + WEEK[d.getDay()] +
         (s === Store.todayStr() ? '（今天）' : ''),
       dayCount: list.length ? (todo.length + ' 待办 · ' + done.length + ' 完成') : '',
-      dayTasks: todo.concat(done).map(Actions.vm)
+      dayTasks: todo.concat(done).map(function (t, i) {
+        var v = Actions.vm(t);
+        v.x = 0;
+        v.moving = false;
+        v.path = 'dayTasks[' + i + '].x';
+        return v;
+      }),
+      swipeOpenPath: ''
     });
   },
 
@@ -134,6 +145,6 @@ Page(Object.assign({
     this.setData({ quickValue: '' });
     wx.showToast({ title: '已添加', icon: 'none', duration: 1200 });
     Actions.change(this);
-  },
-  addTask: function () { this.openEditor(''); }
+    if (this.data.selectedDate >= Store.todayStr()) Remind.requestAuth();
+  }
 }, Actions.createHandlers()));

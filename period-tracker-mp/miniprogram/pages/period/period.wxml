@@ -6,8 +6,6 @@
     <view class="seg-item {{tab === 'stats' ? 'on' : ''}}" data-tab="stats" bindtap="switchTab">统计</view>
   </view>
 
-  <view class="sync-line" bindtap="syncNow">{{syncText}} · 点此同步</view>
-
   <block wx:if="{{tab === 'calendar'}}">
     <!-- ========== 日历 ========== -->
     <view class="card status-card">
@@ -46,16 +44,7 @@
     </view>
 
     <!-- ========== 当天操作（跟着选中的日期走） ========== -->
-    <view class="card day-panel" id="dayPanel">
-      <view class="log-head">
-        <view class="nav-btn" bindtap="prevDay">‹</view>
-        <view class="log-date">
-          <view class="log-date-label">{{logDateLabel}}</view>
-          <view class="log-date-sub">{{logDateSub}}</view>
-        </view>
-        <view class="nav-btn" bindtap="nextDay">›</view>
-      </view>
-
+    <view class="card day-panel">
       <view class="period-toggle {{isPeriod ? 'on' : ''}}" bindtap="togglePeriod">{{periodBtnText}}</view>
       <view wx:if="{{showEndBtn}}" class="period-end {{endClosed ? 'closed' : ''}}" bindtap="toggleEnd">{{endBtnText}}</view>
 
@@ -121,11 +110,5 @@
       </view>
     </view>
   </block>
-
-  <view class="privacy-note">
-    🔒 数据存放在微信云开发数据库 period_data 集合，权限「仅创建者可读写」。
-    未开通云开发时自动降级为离线模式，数据只保存在本机。
-    网页版月记使用另一套账号（Supabase），两边数据暂不互通。
-  </view>
 
 </view>
