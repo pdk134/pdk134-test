@@ -2,6 +2,7 @@
   "pages": [
     "pages/calendar/calendar",
     "pages/list/list",
+    "pages/period/period",
     "pages/me/me"
   ],
   "window": {
@@ -21,6 +22,8 @@
         "iconPath": "images/calendar.png", "selectedIconPath": "images/calendar-on.png" },
       { "pagePath": "pages/list/list", "text": "清单",
         "iconPath": "images/list.png", "selectedIconPath": "images/list-on.png" },
+      { "pagePath": "pages/period/period", "text": "月记",
+        "iconPath": "images/period.png", "selectedIconPath": "images/period-on.png" },
       { "pagePath": "pages/me/me", "text": "我的",
         "iconPath": "images/me.png", "selectedIconPath": "images/me-on.png" }
     ]
