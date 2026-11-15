@@ -93,6 +93,52 @@
     if (name === 'calendar') renderCalendar();
   }
 
+  /* ---------------- 年月快速选择 ---------------- */
+
+  const ym = { year: 0 };
+
+  function renderYM() {
+    els.ymYear.textContent = ym.year + ' 年';
+    const curY = state.viewMonth.getFullYear();
+    const curM = state.viewMonth.getMonth();
+    const t = S.parseDate(S.todayStr());
+    let html = '';
+    for (let i = 0; i < 12; i++) {
+      const cls = ['ym-month'];
+      if (ym.year === curY && i === curM) cls.push('active');
+      if (ym.year === t.getFullYear() && i === t.getMonth()) cls.push('is-now');
+      html += '<button type="button" class="' + cls.join(' ') + '" data-month="' + i + '">' +
+        (i + 1) + '月</button>';
+    }
+    els.ymMonths.innerHTML = html;
+  }
+
+  function openYM() {
+    ym.year = state.viewMonth.getFullYear();
+    renderYM();
+    els.ymMask.classList.add('show');
+  }
+
+  function closeYM() {
+    els.ymMask.classList.remove('show');
+  }
+
+  /**
+   * 切换显示月份。选中日若不在目标月，自动落到该月（本月取今天，其它月取 1 号），
+   * 免得日历换了月、下方当天面板还停在上个月。
+   */
+  function setViewMonth(y, m) {
+    state.viewMonth = new Date(y, m, 1);
+    const sel = S.parseDate(state.selectedDate);
+    if (sel.getFullYear() !== y || sel.getMonth() !== m) {
+      const todayStr = S.todayStr();
+      const t = S.parseDate(todayStr);
+      const sameMonth = (t.getFullYear() === y && t.getMonth() === m);
+      state.selectedDate = sameMonth ? todayStr : S.fmtDate(new Date(y, m, 1));
+    }
+    renderCalendar();
+  }
+
   /* ---------------- 日历 ---------------- */
 
   function dayBadge(dateStr) {
@@ -410,12 +456,38 @@
 
     // 月份切换
     if (els.prevMonth) els.prevMonth.addEventListener('click', function () {
-      state.viewMonth = new Date(state.viewMonth.getFullYear(), state.viewMonth.getMonth() - 1, 1);
-      renderCalendar();
+      const d = new Date(state.viewMonth.getFullYear(), state.viewMonth.getMonth() - 1, 1);
+      setViewMonth(d.getFullYear(), d.getMonth());
     });
     if (els.nextMonth) els.nextMonth.addEventListener('click', function () {
-      state.viewMonth = new Date(state.viewMonth.getFullYear(), state.viewMonth.getMonth() + 1, 1);
-      renderCalendar();
+      const d = new Date(state.viewMonth.getFullYear(), state.viewMonth.getMonth() + 1, 1);
+      setViewMonth(d.getFullYear(), d.getMonth());
+    });
+
+    // 点月份标题 -> 年月快选
+    if (els.monthTitle) els.monthTitle.addEventListener('click', openYM);
+    if (els.ymPrevYear) els.ymPrevYear.addEventListener('click', function () { ym.year--; renderYM(); });
+    if (els.ymNextYear) els.ymNextYear.addEventListener('click', function () { ym.year++; renderYM(); });
+    if (els.ymCancel) els.ymCancel.addEventListener('click', closeYM);
+    if (els.ymMask) els.ymMask.addEventListener('click', function (ev) {
+      if (ev.target === els.ymMask) closeYM();
+    });
+    if (els.ymToday) els.ymToday.addEventListener('click', function () {
+      const todayStr = S.todayStr();
+      const t = S.parseDate(todayStr);
+      state.selectedDate = todayStr;
+      closeYM();
+      setViewMonth(t.getFullYear(), t.getMonth());
+      toast('已回到今天');
+    });
+    if (els.ymMonths) els.ymMonths.addEventListener('click', function (ev) {
+      const btn = ev.target.closest('.ym-month');
+      if (!btn) return;
+      closeYM();
+      setViewMonth(ym.year, Number(btn.dataset.month));
+    });
+    document.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Escape' && els.ymMask && els.ymMask.classList.contains('show')) closeYM();
     });
 
     // 日历点击（事件委托）
@@ -520,6 +592,7 @@
       'addTaskBtn', 'taskGroups', 'headerSub', 'actionSheet', 'sheetTitle', 'sheetToggle',
       'editModal', 'editForm', 'editModalTitle', 'editTitleInput', 'editNote', 'editDate',
       'editError', 'editCancel', 'dateModal', 'dateForm', 'datePick', 'dateCancel',
+      'ymMask', 'ymPrevYear', 'ymNextYear', 'ymYear', 'ymMonths', 'ymToday', 'ymCancel',
       'themeToggle', 'toast'
     ].forEach(function (id) { els[id] = $id(id); });
 

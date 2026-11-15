@@ -6,7 +6,7 @@
  *   - 缓存名带版本号，升级时自动清理旧缓存
  * ========================================================= */
 
-const CACHE_NAME = 'period-tracker-v5';
+const CACHE_NAME = 'period-tracker-v6';
 
 const APP_SHELL = [
   './',
