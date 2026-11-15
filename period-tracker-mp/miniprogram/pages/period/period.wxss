@@ -1,0 +1,144 @@
+/* ===== 月记页专属样式（复用 app.wxss 的 .page/.card/.cal-* 等） ===== */
+
+.seg-bar {
+  display: flex; background: var(--card); border: 1rpx solid var(--border);
+  border-radius: 20rpx; padding: 6rpx; margin-bottom: 12rpx;
+}
+.seg-item {
+  flex: 1; text-align: center; padding: 16rpx 0; font-size: 27rpx;
+  color: var(--text-secondary); border-radius: 16rpx;
+}
+.seg-item.on { background: var(--primary); color: #fff; font-weight: 600; }
+.sync-line {
+  text-align: center; font-size: 22rpx; color: var(--text-secondary);
+  padding: 4rpx 0 18rpx;
+}
+
+/* ===== 状态卡 ===== */
+.status-card { background: linear-gradient(135deg, var(--primary-light), var(--card)); }
+.status-main { font-size: 36rpx; font-weight: 700; line-height: 1.5; }
+.status-sub { font-size: 25rpx; color: var(--text-secondary); line-height: 1.7; margin-top: 10rpx; }
+.phase-tag {
+  display: inline-block; margin-top: 16rpx; padding: 6rpx 20rpx;
+  background: var(--primary); color: #fff; border-radius: 20rpx; font-size: 22rpx;
+}
+
+/* ===== 月历标记（在全局 .cal-cell 基础上加背景色） ===== */
+.cal-cell { border: 2rpx solid transparent; }
+.cal-cell.is-period { background: #f7c9d3; }
+.cal-cell.is-ongoing { background: transparent; border: 2rpx dashed #e79aab; }
+.cal-cell.is-predicted { background: #fde8ec; }
+.cal-cell.is-fertile { background: #e9f1fb; }
+.cal-cell.is-ovulation { background: #e5dcf7; }
+.cal-cell.today .cal-num { color: var(--primary); font-weight: 700; }
+.cal-cell.selected { border: 2rpx solid var(--primary); background: var(--primary); }
+.cal-cell.selected .cal-num { color: #fff; }
+.cal-log-dot {
+  position: absolute; bottom: 8rpx; width: 10rpx; height: 10rpx;
+  border-radius: 50%; background: var(--ok);
+}
+.cal-cell.selected .cal-log-dot { background: #fff; }
+
+.legend { display: flex; flex-wrap: wrap; margin-top: 20rpx; }
+.legend-item { display: flex; align-items: center; font-size: 21rpx; color: var(--text-secondary); margin-right: 14rpx; }
+.lg-box { width: 22rpx; height: 22rpx; border-radius: 6rpx; margin-right: 6rpx; border: 1rpx solid var(--border); }
+.lg-box.is-period { background: #f7c9d3; }
+.lg-box.is-ongoing { background: #fff; border: 2rpx dashed #e79aab; }
+.lg-box.is-predicted { background: #fde8ec; }
+.lg-box.is-fertile { background: #e9f1fb; }
+.lg-box.is-ovulation { background: #e5dcf7; }
+.tip { margin-top: 16rpx; font-size: 22rpx; color: var(--text-secondary); }
+
+/* ===== 记录页 ===== */
+.log-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22rpx; }
+.log-date { flex: 1; text-align: center; }
+.log-date-label { font-size: 32rpx; font-weight: 600; }
+.log-date-sub { font-size: 23rpx; color: var(--text-secondary); margin-top: 4rpx; }
+
+.period-toggle {
+  width: 100%; box-sizing: border-box; text-align: center;
+  padding: 22rpx 16rpx; border-radius: 18rpx; font-size: 27rpx;
+  background: var(--input-bg); border: 2rpx solid var(--border); color: var(--text);
+  margin-bottom: 14rpx;
+}
+.period-toggle.on { background: #f7c9d3; border-color: #e79aab; color: #8c2f45; font-weight: 600; }
+.period-end {
+  width: 100%; box-sizing: border-box; text-align: center;
+  padding: 18rpx 16rpx; border-radius: 16rpx; font-size: 25rpx;
+  background: var(--primary-light); color: var(--primary-dark); margin-bottom: 20rpx;
+}
+.period-end.closed { background: var(--input-bg); color: var(--text-secondary); }
+
+.chip-grid { display: flex; flex-wrap: wrap; margin-bottom: 24rpx; }
+.chip {
+  padding: 12rpx 22rpx; margin: 0 12rpx 12rpx 0;
+  border-radius: 30rpx; font-size: 25rpx;
+  background: var(--input-bg); border: 2rpx solid var(--border); color: var(--text);
+}
+.chip.on { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+.mood-row { display: flex; flex-wrap: wrap; margin-bottom: 24rpx; }
+.mood-btn {
+  width: 16.66%; box-sizing: border-box; text-align: center;
+  padding: 12rpx 0; border-radius: 16rpx; border: 2rpx solid transparent;
+}
+.mood-btn.on { background: var(--primary-light); border-color: var(--primary); }
+.mood-emoji { font-size: 40rpx; line-height: 1.3; }
+.mood-label { font-size: 21rpx; color: var(--text-secondary); }
+
+.note-input {
+  width: 100%; box-sizing: border-box; min-height: 140rpx;
+  background: var(--input-bg); border: 1rpx solid var(--border);
+  border-radius: 16rpx; padding: 18rpx 20rpx; font-size: 27rpx; color: var(--text);
+}
+.save-hint {
+  text-align: right; font-size: 22rpx; color: var(--ok);
+  height: 30rpx; opacity: 0; transition: opacity .2s; margin-top: 8rpx;
+}
+.save-hint.show { opacity: 1; }
+
+/* ===== 统计页 ===== */
+.alert-card { border-left: 8rpx solid var(--primary); }
+.alert-card.info { border-left-color: var(--accent); }
+.alert-card.warn { border-left-color: #e8952f; }
+.alert-title { font-size: 29rpx; font-weight: 600; margin-bottom: 10rpx; }
+.alert-desc { font-size: 25rpx; color: var(--text-secondary); line-height: 1.75; }
+
+.next-card { background: linear-gradient(135deg, var(--primary-light), var(--card)); }
+.next-title { font-size: 27rpx; font-weight: 600; }
+.next-date { font-size: 40rpx; font-weight: 700; margin: 12rpx 0; }
+.next-sub { font-size: 24rpx; color: var(--text-secondary); }
+
+.bar-chart { display: flex; align-items: flex-end; height: 240rpx; padding-top: 20rpx; }
+.bar-item { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; }
+.bar-value { font-size: 21rpx; color: var(--text-secondary); }
+.bar-track { flex: 1; width: 44rpx; display: flex; align-items: flex-end; }
+.bar { width: 100%; background: var(--primary); border-radius: 10rpx 10rpx 0 0; min-height: 6rpx; }
+.bar-label { font-size: 20rpx; color: var(--text-secondary); margin-top: 8rpx; }
+.chart-empty { color: var(--text-secondary); font-size: 25rpx; text-align: center; padding: 40rpx 0; }
+
+.history-item {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 18rpx 0; border-bottom: 1rpx solid var(--border);
+}
+.history-item:last-child { border-bottom: none; }
+.history-dates { font-size: 27rpx; }
+.history-meta { font-size: 22rpx; color: var(--text-secondary); }
+
+/* ===== 深色模式日历标记 ===== */
+.theme-dark .cal-cell.is-period { background: #6b3040; }
+.theme-dark .cal-cell.is-ongoing { border-color: #b76b7f; }
+.theme-dark .cal-cell.is-predicted { background: #432a33; }
+.theme-dark .cal-cell.is-fertile { background: #26364a; }
+.theme-dark .cal-cell.is-ovulation { background: #342c4a; }
+.theme-dark .period-toggle.on { background: #6b3040; border-color: #b76b7f; color: #ffd9e1; }
+/* 选中态优先级要压过各种经期/预测背景（含深色模式） */
+.theme-dark .cal-cell.selected,
+.theme-dark .cal-cell.is-period.selected,
+.theme-dark .cal-cell.is-predicted.selected,
+.theme-dark .cal-cell.is-fertile.selected { background: var(--primary); border-color: var(--primary); }
+.cal-cell.is-period.selected,
+.cal-cell.is-predicted.selected,
+.cal-cell.is-fertile.selected,
+.cal-cell.is-ovulation.selected { background: var(--primary); }
+.cal-cell.selected .cal-num { color: #fff; }
