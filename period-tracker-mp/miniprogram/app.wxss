@@ -55,7 +55,6 @@
 .hidden { display: none; }
 
 .section-title { font-size: 30rpx; font-weight: 600; margin-bottom: 12rpx; }
-.panel-desc { font-size: 25rpx; color: var(--text-secondary); line-height: 1.7; }
 .empty-hint {
   color: var(--text-secondary);
   font-size: 26rpx;

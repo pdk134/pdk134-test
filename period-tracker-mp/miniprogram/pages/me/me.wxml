@@ -12,15 +12,6 @@
   </view>
 
   <view class="panel-card">
-    <view class="section-title">🌸 月记</view>
-    <view class="panel-desc">月记已内置为本小程序的「月记」板块：经期标记、症状心情备注、周期预测与规律分析都在里面，数据存在微信云开发。</view>
-    <view class="action-btn" bindtap="goPeriod">
-      打开月记
-      <text class="sub">也可点底部的「月记」标签进入</text>
-    </view>
-  </view>
-
-  <view class="panel-card">
     <view class="section-title">🌗 外观</view>
     <view class="theme-row">
       <text>深色模式</text>

@@ -70,10 +70,6 @@ Page({
     });
   },
 
-  goPeriod: function () {
-    wx.switchTab({ url: '/pages/period/period' });
-  },
-
   toggleTheme: function () {
     var next = this.data.theme === 'dark' ? 'light' : 'dark';
     getApp().setTheme(next);
