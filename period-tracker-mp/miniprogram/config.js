@@ -23,7 +23,6 @@
  *   未开通云开发 / 集合未建时会自动降级为离线模式，界面仍可用。
  *
  * 上线前还需在微信公众平台完成：小程序备案、服务类目、用户隐私保护指引。
- * 个人主体不支持 web-view，网页版入口只能复制链接由浏览器打开；
  * 月记已内置为小程序板块，与网页版（Supabase 账号）数据暂不互通。
  */
 
@@ -37,11 +36,7 @@ const CFG = {
   // 月记
   PERIOD_COLLECTION: 'period_data',
   PERIOD_STORAGE_PREFIX: 'periodTracker.mp.v1',
-  PERIOD_SCOPE_KEY: 'periodTracker.mp.scope',
-
-  // 网页版地址（个人主体小程序不支持 web-view，也不支持直接跳外链，只能复制后用浏览器打开）
-  WEB_TASKLIST_URL: 'https://pdk134.github.io/pdk134-test/tasklist/',
-  WEB_MONTH_URL: 'https://pdk134.github.io/pdk134-test/period-tracker/'
+  PERIOD_SCOPE_KEY: 'periodTracker.mp.scope'
 };
 
 module.exports = CFG;
