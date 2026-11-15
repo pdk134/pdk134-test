@@ -69,6 +69,7 @@ Page(Object.assign({
     this.setData({
       viewYear: y, viewMonth: m,
       monthTitle: y + ' 年 ' + m + ' 月',
+      pickerValue: y + '-' + pad2(m),
       blanks: blanks, days: days
     });
   },
@@ -88,17 +89,36 @@ Page(Object.assign({
     });
   },
 
+  /* 跳到某年某月：选中日若不在目标月，自动落到该月（本月取今天，其它月取 1 号） */
+  jumpMonth: function (y, m) {
+    var sel = Store.parseDate(this.data.selectedDate);
+    var same = (sel.getFullYear() === y && sel.getMonth() === m - 1);
+    if (!same) {
+      var t = Store.today();
+      var nd = (t.getFullYear() === y && t.getMonth() === m - 1) ? t : new Date(y, m - 1, 1);
+      this.setData({ selectedDate: Store.fmtDate(nd) });
+    }
+    this.renderCalendar(y, m, this.data.selectedDate);
+    this.renderDay(this.data.selectedDate);
+  },
+
+  /* 顶部月份标题 -> 微信原生年月选择器 */
+  onPickMonth: function (e) {
+    var v = (e.detail.value || '').split('-');
+    var y = parseInt(v[0], 10), m = parseInt(v[1], 10);
+    if (!y || !m) return;
+    this.jumpMonth(y, m);
+  },
+
   prevMonth: function () {
     var y = this.data.viewYear, m = this.data.viewMonth - 1;
     if (m < 1) { m = 12; y--; }
-    this.setData({ viewYear: y, viewMonth: m });
-    this.renderCalendar(y, m, this.data.selectedDate);
+    this.jumpMonth(y, m);
   },
   nextMonth: function () {
     var y = this.data.viewYear, m = this.data.viewMonth + 1;
     if (m > 12) { m = 1; y++; }
-    this.setData({ viewYear: y, viewMonth: m });
-    this.renderCalendar(y, m, this.data.selectedDate);
+    this.jumpMonth(y, m);
   },
   selectDate: function (e) {
     var s = e.currentTarget.dataset.date;
