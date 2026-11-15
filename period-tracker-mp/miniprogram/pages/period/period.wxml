@@ -19,7 +19,9 @@
     <view class="card">
       <view class="cal-head">
         <view class="nav-btn" bindtap="prevMonth">‹</view>
-        <view class="month-title">{{monthTitle}}</view>
+        <picker mode="date" fields="month" value="{{pickerValue}}" bindchange="onPickMonth">
+          <view class="month-title">{{monthTitle}} ▾</view>
+        </picker>
         <view class="nav-btn" bindtap="nextMonth">›</view>
       </view>
       <view class="week-row">

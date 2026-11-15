@@ -233,6 +233,7 @@ const els = {
   statusCard: $('statusCard'),
   monthLabel: $('monthLabel'),
   calendarGrid: $('calendarGrid'),
+  dayCard: $('dayCard'),
   logDateLabel: $('logDateLabel'),
   logDateSub: $('logDateSub'),
   periodToggle: $('periodToggle'),
@@ -694,6 +695,63 @@ function renderAll() {
   renderStats();
 }
 
+/* ---------- 年月快速选择 ---------- */
+const ym = { year: 0 };
+
+function renderYM() {
+  $('ymYear').textContent = ym.year + ' 年';
+  const curY = state.viewMonth.getFullYear();
+  const curM = state.viewMonth.getMonth();
+  const t = today();
+  let html = '';
+  for (let i = 0; i < 12; i++) {
+    const cls = ['ym-month'];
+    if (ym.year === curY && i === curM) cls.push('active');
+    if (ym.year === t.getFullYear() && i === t.getMonth()) cls.push('is-now');
+    html += '<button type="button" class="' + cls.join(' ') + '" data-month="' + i + '">' +
+      (i + 1) + '月</button>';
+  }
+  $('ymMonths').innerHTML = html;
+}
+
+function openYM() {
+  ym.year = state.viewMonth.getFullYear();
+  renderYM();
+  $('ymMask').classList.add('show');
+}
+
+function closeYM() {
+  $('ymMask').classList.remove('show');
+}
+
+/**
+ * 切换日历显示的月份。
+ * 选中日期若不在目标月，自动落到该月（本月取今天，其它月取 1 号），
+ * 保证下方当天操作卡始终与日历对得上。
+ */
+function setViewMonth(y, m) {
+  state.viewMonth = new Date(y, m, 1);
+  const sel = parseDate(state.selectedDate);
+  if (sel.getFullYear() !== y || sel.getMonth() !== m) {
+    const t = today();
+    const sameMonth = (t.getFullYear() === y && t.getMonth() === m);
+    state.selectedDate = fmt(sameMonth ? t : new Date(y, m, 1));
+  }
+  renderCalendar();
+  renderLog();
+}
+
+/** 选中日期后，若当天操作卡还在屏幕外，轻滚过去 */
+function revealPanel() {
+  const card = els.dayCard;
+  if (!card) return;
+  const r = card.getBoundingClientRect();
+  const vh = window.innerHeight || document.documentElement.clientHeight;
+  if (r.top > vh - 160) {
+    card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
 /* ---------- 事件绑定 ---------- */
 function bindEvents() {
   // 底部 Tab
@@ -703,41 +761,70 @@ function bindEvents() {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       btn.classList.add('active');
       $('page-' + btn.dataset.page).classList.add('active');
+      if (btn.dataset.page === 'stats') {
+        renderStats();
+        const main = document.querySelector('.app-main');
+        if (main) main.scrollTop = 0;
+      }
     });
   });
 
   // 月份切换
   $('prevMonth').addEventListener('click', () => {
-    state.viewMonth = new Date(state.viewMonth.getFullYear(), state.viewMonth.getMonth() - 1, 1);
-    renderCalendar();
+    const d = new Date(state.viewMonth.getFullYear(), state.viewMonth.getMonth() - 1, 1);
+    setViewMonth(d.getFullYear(), d.getMonth());
   });
   $('nextMonth').addEventListener('click', () => {
-    state.viewMonth = new Date(state.viewMonth.getFullYear(), state.viewMonth.getMonth() + 1, 1);
-    renderCalendar();
+    const d = new Date(state.viewMonth.getFullYear(), state.viewMonth.getMonth() + 1, 1);
+    setViewMonth(d.getFullYear(), d.getMonth());
   });
 
-  // 日历点击 -> 选中日期并跳到记录页
+  // 点月份标题 -> 年月快选
+  els.monthLabel.addEventListener('click', openYM);
+  $('ymPrevYear').addEventListener('click', () => { ym.year--; renderYM(); });
+  $('ymNextYear').addEventListener('click', () => { ym.year++; renderYM(); });
+  $('ymCancel').addEventListener('click', closeYM);
+  $('ymMask').addEventListener('click', e => {
+    if (e.target === $('ymMask')) closeYM();
+  });
+  $('ymToday').addEventListener('click', () => {
+    const t = today();
+    state.selectedDate = fmt(t);
+    closeYM();
+    setViewMonth(t.getFullYear(), t.getMonth());
+    renderStatus();
+    revealPanel();
+  });
+  $('ymMonths').addEventListener('click', e => {
+    const btn = e.target.closest('.ym-month');
+    if (!btn) return;
+    closeYM();
+    setViewMonth(ym.year, Number(btn.dataset.month));
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && $('ymMask').classList.contains('show')) closeYM();
+  });
+
+  // 日历点击 -> 选中该天，下方操作卡就地换内容（不跳页）
   els.calendarGrid.addEventListener('click', e => {
     const cell = e.target.closest('.day-cell');
     if (!cell) return;
     state.selectedDate = cell.dataset.date;
     renderCalendar();
     renderLog();
-    document.querySelector('.tab-btn[data-page="log"]').click();
+    revealPanel();
   });
 
-  // 记录页：日期前后切换
+  // 当天操作卡：日期前后切换
   $('logPrevDay').addEventListener('click', () => {
-    state.selectedDate = fmt(addDays(parseDate(state.selectedDate), -1));
-    state.viewMonth = parseDate(state.selectedDate);
-    renderCalendar();
-    renderLog();
+    const d = addDays(parseDate(state.selectedDate), -1);
+    state.selectedDate = fmt(d);
+    setViewMonth(d.getFullYear(), d.getMonth());
   });
   $('logNextDay').addEventListener('click', () => {
-    state.selectedDate = fmt(addDays(parseDate(state.selectedDate), 1));
-    state.viewMonth = parseDate(state.selectedDate);
-    renderCalendar();
-    renderLog();
+    const d = addDays(parseDate(state.selectedDate), 1);
+    state.selectedDate = fmt(d);
+    setViewMonth(d.getFullYear(), d.getMonth());
   });
 
   // 记录页：经期开关

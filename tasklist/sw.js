@@ -6,7 +6,7 @@
  *   - 缓存名带版本号，升级时自动清理旧缓存
  * ========================================================= */
 
-const CACHE_NAME = 'tasklist-v2';
+const CACHE_NAME = 'tasklist-v3';
 
 const APP_SHELL = [
   './',

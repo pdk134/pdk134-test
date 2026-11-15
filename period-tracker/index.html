@@ -61,7 +61,7 @@
       <div class="calendar-card">
         <div class="calendar-header">
           <button class="nav-btn" id="prevMonth" aria-label="上个月">‹</button>
-          <span class="month-label" id="monthLabel"></span>
+          <button class="month-label" id="monthLabel" aria-haspopup="dialog" aria-label="选择年月"></button>
           <button class="nav-btn" id="nextMonth" aria-label="下个月">›</button>
         </div>
         <div class="calendar-weekdays">
@@ -77,12 +77,10 @@
           <span><i class="dot dot-log"></i>有记录</span>
         </div>
       </div>
-      <p class="hint">💡 标记经期开始日后，会按平均经期长度自动向后延展出虚线预测；点击虚线日期即可确认为经期</p>
-    </section>
+      <p class="hint">💡 点日历里的任意日期，下面就能直接标记经期、记录症状和心情</p>
 
-    <!-- ========== 记录页 ========== -->
-    <section id="page-log" class="page">
-      <div class="log-card">
+      <!-- 当天操作卡：跟随选中的日期，全程在本页完成 -->
+      <div class="day-card" id="dayCard">
         <div class="log-date-nav">
           <button class="nav-btn" id="logPrevDay" aria-label="前一天">‹</button>
           <div class="log-date-text">
@@ -193,10 +191,25 @@
 
   <nav class="tab-bar">
     <button class="tab-btn active" data-page="calendar"><span class="tab-icon">📅</span>日历</button>
-    <button class="tab-btn" data-page="log"><span class="tab-icon">✏️</span>记录</button>
     <button class="tab-btn" data-page="stats"><span class="tab-icon">📊</span>统计</button>
   </nav>
 
+</div>
+
+<!-- 年月快速选择 -->
+<div class="ym-mask" id="ymMask" role="dialog" aria-modal="true" aria-label="选择年月">
+  <div class="ym-panel">
+    <div class="ym-head">
+      <button class="nav-btn sm" id="ymPrevYear" aria-label="上一年">‹</button>
+      <span class="ym-year" id="ymYear"></span>
+      <button class="nav-btn sm" id="ymNextYear" aria-label="下一年">›</button>
+    </div>
+    <div class="ym-months" id="ymMonths"></div>
+    <div class="ym-foot">
+      <button class="ym-btn" id="ymToday">回到今天</button>
+      <button class="ym-btn ghost" id="ymCancel">取消</button>
+    </div>
+  </div>
 </div>
 
 <!-- 全局提示条 -->
