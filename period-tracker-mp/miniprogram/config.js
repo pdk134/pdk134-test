@@ -8,8 +8,8 @@
  *     没部署也会自动降级，不影响使用。
  *
  * 云开发环境：
- *   - 留空 = 使用云开发控制台里的「默认环境」，开通后无需改代码；
- *   - 如果有多个环境，把环境 ID 填到下面的 CLOUD_ENV 即可。
+ *   - CLOUD_ENV 填环境 ID = 代码里明确指定使用该环境（推荐，多个环境时不会选错）；
+ *   - 留空 = 使用云开发控制台里的「默认环境」，开通后无需改代码。
  *
  * 首次运行四步：
  *   1) 微信开发者工具「导入项目」选本目录，把 project.config.json 的
@@ -24,7 +24,7 @@
  */
 
 const CFG = {
-  CLOUD_ENV: '',
+  CLOUD_ENV: 'cloud1-d9go64jy3cbbddd85',
   COLLECTION: 'tasks',
   PUSH_DELAY: 2500,
   STORAGE_PREFIX: 'taskList.mp.v1',

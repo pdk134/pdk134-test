@@ -1,6 +1,6 @@
 {
   "description": "任务清单小程序（个人主体 · 微信云开发）",
-  "appid": "touristappid",
+  "appid": "wx5bda0426e4091985",
   "projectname": "period-tracker-mp",
   "miniprogramRoot": "miniprogram/",
   "cloudfunctionRoot": "cloudfunctions/",
@@ -32,7 +32,24 @@
     "packNpmRelationList": [],
     "minifyWXSS": true,
     "useCompilerPlugins": false,
-    "ignoreUploadUnusedFiles": true
+    "ignoreUploadUnusedFiles": true,
+    "compileWorklet": false,
+    "uglifyFileName": false,
+    "minifyWXML": true,
+    "localPlugins": false,
+    "disableUseStrict": false,
+    "condition": false,
+    "babelSetting": {
+      "ignore": [],
+      "disablePlugins": [],
+      "outputPath": ""
+    }
   },
-  "condition": {}
+  "condition": {},
+  "simulatorPluginLibVersion": {},
+  "packOptions": {
+    "ignore": [],
+    "include": []
+  },
+  "editorSetting": {}
 }
