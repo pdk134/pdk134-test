@@ -21,19 +21,6 @@
   </view>
 
   <view class="panel-card">
-    <view class="section-title">🌐 网页版</view>
-    <view class="panel-desc">个人主体小程序不支持内嵌网页，只能复制链接由浏览器打开。网页版用另一套账号（Supabase），与小程序数据暂不互通。</view>
-    <view class="action-btn" data-url="month" bindtap="copyLink">
-      复制「月记」网页版链接
-      <text class="sub">pdk134.github.io/pdk134-test/period-tracker/</text>
-    </view>
-    <view class="action-btn" data-url="task" bindtap="copyLink">
-      复制「任务清单」网页版链接
-      <text class="sub">pdk134.github.io/pdk134-test/tasklist/</text>
-    </view>
-  </view>
-
-  <view class="panel-card">
     <view class="section-title">🌗 外观</view>
     <view class="theme-row">
       <text>深色模式</text>

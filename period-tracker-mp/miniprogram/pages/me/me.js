@@ -1,4 +1,3 @@
-var CFG = require('../../config.js');
 var Cloud = require('../../utils/cloud.js');
 var Store = require('../../utils/store.js');
 var PeriodCloud = require('../../utils/period-cloud.js');
@@ -73,20 +72,6 @@ Page({
 
   goPeriod: function () {
     wx.switchTab({ url: '/pages/period/period' });
-  },
-
-  copyLink: function (e) {
-    var url = e.currentTarget.dataset.url === 'month' ? CFG.WEB_MONTH_URL : CFG.WEB_TASKLIST_URL;
-    wx.setClipboardData({
-      data: url,
-      success: function () {
-        wx.showModal({
-          title: '链接已复制',
-          content: '个人主体的小程序不能直接打开外部网页。请打开手机浏览器，粘贴访问；或把网页版添加到桌面。',
-          showCancel: false
-        });
-      }
-    });
   },
 
   toggleTheme: function () {
