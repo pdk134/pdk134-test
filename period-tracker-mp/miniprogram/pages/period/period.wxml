@@ -3,7 +3,6 @@
   <!-- 顶部分段 -->
   <view class="seg-bar">
     <view class="seg-item {{tab === 'calendar' ? 'on' : ''}}" data-tab="calendar" bindtap="switchTab">日历</view>
-    <view class="seg-item {{tab === 'log' ? 'on' : ''}}" data-tab="log" bindtap="switchTab">记录</view>
     <view class="seg-item {{tab === 'stats' ? 'on' : ''}}" data-tab="stats" bindtap="switchTab">统计</view>
   </view>
 
@@ -41,13 +40,11 @@
         <view class="legend-item"><view class="lg-box is-fertile"></view>易孕期</view>
         <view class="legend-item"><view class="lg-box is-ovulation"></view>排卵日</view>
       </view>
-      <view class="tip">点日历里的某一天，可直接跳到那天的记录</view>
+      <view class="tip">点日历里的某一天，就在下方标记经期、记录症状心情</view>
     </view>
-  </block>
 
-  <block wx:elif="{{tab === 'log'}}">
-    <!-- ========== 记录 ========== -->
-    <view class="card">
+    <!-- ========== 当天操作（跟着选中的日期走） ========== -->
+    <view class="card day-panel" id="dayPanel">
       <view class="log-head">
         <view class="nav-btn" bindtap="prevDay">‹</view>
         <view class="log-date">
@@ -82,7 +79,7 @@
     </view>
   </block>
 
-  <block wx:else>
+  <block wx:if="{{tab === 'stats'}}">
     <!-- ========== 统计 ========== -->
     <view class="stat-row">
       <view class="stat-card"><text class="num">{{avgCycle}}</text><text class="label">平均周期(天)</text></view>

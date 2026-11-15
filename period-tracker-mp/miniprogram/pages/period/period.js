@@ -11,7 +11,7 @@ function pad2(n) { return n < 10 ? '0' + n : String(n); }
 Page({
   data: {
     theme: 'light',
-    tab: 'calendar',                 // calendar | log | stats
+    tab: 'calendar',                 // calendar | stats
     syncText: '',
 
     // 日历
@@ -75,6 +75,7 @@ Page({
   switchTab: function (e) {
     this.flushNote();
     this.setData({ tab: e.currentTarget.dataset.tab });
+    wx.pageScrollTo({ scrollTop: 0, duration: 0 });
   },
 
   /* ---------------- 渲染总入口 ---------------- */
@@ -137,8 +138,23 @@ Page({
   },
   selectDate: function (e) {
     this.flushNote();
-    this.setData({ selectedDate: e.currentTarget.dataset.date, tab: 'log' });
+    this.setData({ selectedDate: e.currentTarget.dataset.date, tab: 'calendar' });
     this.renderAll();
+    this.revealPanel();
+  },
+
+  /** 选中日期后，若下方操作卡还在屏幕外，轻滚过去 */
+  revealPanel: function () {
+    wx.nextTick(function () {
+      wx.createSelectorQuery().select('#dayPanel').boundingClientRect(function (r) {
+        if (!r) return;
+        var h = 0;
+        try { h = (wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync()).windowHeight; } catch (err) { return; }
+        if (h && r.top > h - 140) {
+          wx.pageScrollTo({ selector: '#dayPanel', offsetTop: -12, duration: 260 });
+        }
+      }).exec();
+    });
   },
 
   /* ---------------- 状态卡 ---------------- */
@@ -182,7 +198,7 @@ Page({
     this.setData({ statusMain: main, statusSub: sub, statusTag: tag });
   },
 
-  /* ---------------- 记录页 ---------------- */
+  /* ---------------- 当天操作卡 ---------------- */
   renderLog: function () {
     var sel = this.data.selectedDate || Store.todayStr();
     var d = Store.parseDate(sel), t = Store.today();
