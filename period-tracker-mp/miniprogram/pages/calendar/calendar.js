@@ -15,7 +15,10 @@ Page(Object.assign({
     weekNames: ['一', '二', '三', '四', '五', '六', '日'],
     blanks: [], days: [],
     selectedDate: '', dayTitle: '', dayCount: '', dayTasks: [],
-    quickValue: '',
+    quickValue: '', quickTime: '',
+    beforeValues: [0, 5, 10, 15, 30, 60, 120, 1440],
+    beforeLabels: ['到点提醒', '提前 5 分钟', '提前 10 分钟', '提前 15 分钟', '提前 30 分钟', '提前 1 小时', '提前 2 小时', '提前 1 天'],
+    beforeIndex: 0,
     swipeOpenPath: '',
     deferForId: '', deferDays: 1,
     editorVisible: false, editorId: '', editorTask: null, editorDate: ''
@@ -141,12 +144,19 @@ Page(Object.assign({
     Remind.ensureAuth();
   },
   onQuickInput: function (e) { this.setData({ quickValue: e.detail.value }); },
+  onQuickTime: function (e) { this.setData({ quickTime: e.detail.value }); },
+  onQuickBefore: function (e) { this.setData({ beforeIndex: Number(e.detail.value) || 0 }); },
   quickAdd: function () {
     var v = (this.data.quickValue || '').trim();
     if (!v) return;
-    Store.create({ title: v, due: this.data.selectedDate });
-    this.setData({ quickValue: '' });
-    wx.showToast({ title: '已添加', icon: 'none', duration: 1200 });
+    var tm = this.data.quickTime;
+    Store.create({
+      title: v, due: this.data.selectedDate,
+      time: tm,
+      before: this.data.beforeValues[this.data.beforeIndex] || 0
+    });
+    this.setData({ quickValue: '', quickTime: '', beforeIndex: 0 });
+    wx.showToast({ title: tm ? '已添加，将按时提醒' : '已添加', icon: 'none', duration: 1200 });
     Actions.change(this);
     if (this.data.selectedDate >= Store.todayStr()) Remind.ensureAuth();
   }

@@ -21,8 +21,8 @@
  *      两个都把权限选「仅创建者可读写」；
  *      再建一个 remind_log，用来存提醒发送记录（由云函数写入，客户端无需读）；
  *   4) 可选：右键 cloudfunctions/login → 上传并部署，用于显示 openid；
- *   5) 要用每日提醒：右键 cloudfunctions/remind →「上传并部署：云端安装依赖」，
- *      config.json 里的定时触发器（每天 8:00）会随之上传，上传后确认触发器已生效。
+ *   5) 要用提醒：右键 cloudfunctions/remind →「上传并部署：云端安装依赖」，
+ *      config.json 里的定时触发器（每分钟）会随之上传，上传后确认触发器已生效。
  *   未开通云开发 / 集合未建时会自动降级为离线模式，界面仍可用。
  *
  * 上线前还需在微信公众平台完成：小程序备案、服务类目、用户隐私保护指引。
@@ -48,8 +48,9 @@ const CFG = {
 
   // 待办提醒（微信一次性订阅消息）
   // 模板 ID 来自：mp.weixin.qq.com → 功能 → 订阅消息 → 我的模板；每个小程序唯一
-  // 发送时间（每天 8:00 提醒当天+次日到期）、模板字段名、日志集合等配置在
-  // cloudfunctions/remind/index.js 顶部；发送记录写入云数据库 remind_log 集合
+  // 设了具体时间的任务按 remind_at 到点提醒；没设时间的任务每天 8:00 汇总当天+次日。
+  // 定时频率、模板字段名、日志集合等配置在 cloudfunctions/remind/index.js 顶部，
+  // 触发器在 cloudfunctions/remind/config.json；发送记录写入云数据库 remind_log 集合
   REMIND_TMPL_ID: 'EPvaF7BUcvy5Pg5bseZBDJgtReOba0EMGvssnkkaoA8'
 };
 

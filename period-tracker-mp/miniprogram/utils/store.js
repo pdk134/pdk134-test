@@ -32,6 +32,25 @@ function normDate(s) {
   if (!m) return todayStr();
   return m[1] + '-' + pad2(+m[2]) + '-' + pad2(+m[3]);
 }
+function normTime(s) {
+  var m = /^(\d{1,2}):(\d{2})$/.exec(String(s || '').trim());
+  if (!m) return '';
+  var h = Number(m[1]), mi = Number(m[2]);
+  if (h > 23 || mi > 59) return '';
+  return pad2(h) + ':' + pad2(mi);
+}
+/** 提醒时刻 = 到期日 + 具体时间 - 提前分钟；时间为空则不参与分钟级提醒 */
+function calcRemindAt(dueDate, dueTime, before) {
+  var tm = normTime(dueTime);
+  if (!tm) return '';
+  var p = tm.split(':');
+  var mins = Number(p[0]) * 60 + Number(p[1]) - (Math.max(0, Number(before) || 0));
+  var offset = 0;
+  while (mins < 0) { mins += 1440; offset--; }
+  while (mins >= 1440) { mins -= 1440; offset++; }
+  var d = addDays(parseDate(normDate(dueDate)), offset);
+  return fmtDate(d) + ' ' + pad2(Math.floor(mins / 60)) + ':' + pad2(mins % 60);
+}
 
 /* ---------------- 持久化 ---------------- */
 function persist() {
@@ -87,6 +106,9 @@ function create(fields) {
     title: String(fields.title || '').trim().slice(0, 200),
     note: String(fields.note || '').trim().slice(0, 2000),
     due_date: normDate(fields.due),
+    due_time: normTime(fields.time),
+    remind_before: Math.max(0, Math.min(1440, Number(fields.before) || 0)),
+    remind_at: '',
     status: 'todo',
     priority: Number(fields.priority) || 0,
     defer_count: 0,
@@ -97,6 +119,7 @@ function create(fields) {
     updated_at: nowISO()
   };
   if (!t.title) return null;
+  t.remind_at = calcRemindAt(t.due_date, t.due_time, t.remind_before);
   tasks[t.id] = t; pending[t.id] = true; persist();
   return t;
 }
@@ -106,6 +129,11 @@ function patch(id, changes) {
   if (typeof changes.title === 'string' && changes.title.trim()) t.title = changes.title.trim().slice(0, 200);
   if (typeof changes.note === 'string') t.note = changes.note.trim().slice(0, 2000);
   if (changes.due) t.due_date = normDate(changes.due);
+  if (typeof changes.time === 'string') t.due_time = normTime(changes.time);
+  if (typeof changes.before === 'number' && isFinite(changes.before)) {
+    t.remind_before = Math.max(0, Math.min(1440, Math.round(changes.before)));
+  }
+  t.remind_at = calcRemindAt(t.due_date, t.due_time, t.remind_before);
   if (typeof changes.priority === 'number' && isFinite(changes.priority)) t.priority = changes.priority;
   touch(t); return t;
 }
@@ -121,6 +149,7 @@ function deferTo(id, dateStr) {
   if (next === t.due_date) return t;
   if (!t.original_due_date) t.original_due_date = t.due_date;
   t.due_date = next;
+  t.remind_at = calcRemindAt(t.due_date, t.due_time, t.remind_before);
   t.defer_count = (t.defer_count || 0) + 1;
   if (t.status === 'done') { t.status = 'todo'; t.completed_at = null; }
   touch(t); return t;
@@ -158,6 +187,9 @@ function rowToTask(r) {
     title: String(r.title || ''),
     note: String(r.note || ''),
     due_date: normDate(r.due_date),
+    due_time: normTime(r.due_time),
+    remind_before: Math.max(0, Math.min(1440, Number(r.remind_before) || 0)),
+    remind_at: calcRemindAt(normDate(r.due_date), normTime(r.due_time), Number(r.remind_before) || 0),
     status: r.status === 'done' ? 'done' : 'todo',
     priority: Number(r.priority) || 0,
     defer_count: Number(r.defer_count) || 0,
@@ -194,6 +226,8 @@ function markSynced(ids) { clearPending(ids); }
 function toRow(t) {
   return {
     id: t.id, title: t.title, note: t.note || '', due_date: t.due_date,
+    due_time: t.due_time || '', remind_before: Number(t.remind_before) || 0,
+    remind_at: t.remind_at || '',
     status: t.status === 'done' ? 'done' : 'todo',
     priority: Number(t.priority) || 0, defer_count: Number(t.defer_count) || 0,
     original_due_date: t.original_due_date || '',
