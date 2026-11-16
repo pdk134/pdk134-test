@@ -128,7 +128,8 @@ Page({
 
   /* 顶部月份标题 -> 微信原生年月选择器 */
   onPickMonth: function (e) {
-    var v = (e.detail.value || '').split('-');
+    var raw = (e && e.detail && e.detail.value) || '';
+    var v = String(raw).split('-');
     var y = parseInt(v[0], 10), m = parseInt(v[1], 10);
     if (!y || !m) return;
     this.jumpMonth(y, m);
