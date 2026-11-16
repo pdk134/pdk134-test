@@ -16,6 +16,7 @@ Page(Object.assign({
     theme: 'light',
     statTodo: 0, statDone: 0, statRate: '–', headerSub: '',
     groups: [], doneCollapsed: true,
+    swipeOpenPath: '', deferForId: '', deferDays: 1,
     editorVisible: false, editorId: '', editorTask: null, editorDate: '', selectedDate: ''
   },
 
@@ -29,6 +30,8 @@ Page(Object.assign({
   onShow: function () {
     var t = getApp().globalData.theme;
     if (t !== this.data.theme) this.setData({ theme: t });
+    if (Cloud.state().cloudReady) Cloud.pull(true);
+    this.setData({ deferForId: '', deferDays: 1 });
     this.refresh();
   },
 
@@ -54,10 +57,17 @@ Page(Object.assign({
     DEFS.forEach(function (def) {
       var list = g[def.key];
       if (!list.length) return;
+      var gi = groups.length;
       var collapsed = def.key === 'done' && self.data.doneCollapsed && list.length > 3;
       groups.push({
         key: def.key, label: def.label, count: list.length,
-        tasks: (collapsed ? list.slice(0, 3) : list).map(Actions.vm),
+        tasks: (collapsed ? list.slice(0, 3) : list).map(function (t, ti) {
+          var v = Actions.vm(t);
+          v.x = 0;
+          v.moving = false;
+          v.path = 'groups[' + gi + '].tasks[' + ti + '].x';
+          return v;
+        }),
         collapsed: collapsed
       });
     });
@@ -71,6 +81,7 @@ Page(Object.assign({
         ? '今天还有 ' + n + ' 件事' + (st.overdue ? '（' + st.overdue + ' 件逾期）' : '')
         : '今天没有安排，享受吧 ✨',
       groups: groups,
+      swipeOpenPath: '',
       selectedDate: today
     });
   },
@@ -80,6 +91,5 @@ Page(Object.assign({
     this.setData({ doneCollapsed: !this.data.doneCollapsed });
     this.refresh();
   },
-  expandDone: function () { this.setData({ doneCollapsed: false }); this.refresh(); },
-  addTask: function () { this.openEditor(''); }
+  expandDone: function () { this.setData({ doneCollapsed: false }); this.refresh(); }
 }, Actions.createHandlers()));

@@ -11,3 +11,41 @@
     <view class="more" data-id="{{id}}" catchtap="onMore">⋯</view>
   </view>
 </template>
+
+<!-- 左滑任务行：日历页 / 清单页共用，事件由 utils/actions.js 提供 -->
+<template name="swipeTaskRow">
+  <view class="swipe-wrap">
+    <view wx:if="{{deferForId === id}}" class="defer-pop" data-path="{{path}}">
+      <view class="defer-stepper">
+        <view class="step-btn {{deferDays <= 1 ? 'off' : ''}}" catchtap="onDeferMinus">−</view>
+        <input class="step-input" type="number" value="{{deferDays}}" bindinput="onDeferDaysInput" />
+        <text class="step-unit">天</text>
+        <view class="step-btn" catchtap="onDeferPlus">＋</view>
+      </view>
+      <view class="defer-actions">
+        <view class="defer-btn ok" data-path="{{path}}" catchtap="onDeferConfirm">确定</view>
+        <view class="defer-btn ghost" catchtap="onDeferCancel">取消</view>
+      </view>
+    </view>
+    <view class="swipe-clip">
+      <view class="swipe-actions">
+        <view class="swipe-btn defer" data-id="{{id}}" data-path="{{path}}" catchtap="onSwipeDefer">推迟</view>
+        <view class="swipe-btn del" data-id="{{id}}" data-path="{{path}}" catchtap="onSwipeDelete">删除</view>
+      </view>
+      <view class="swipe-content {{moving ? '' : 'anim'}}" style="transform: translateX({{x}}px);"
+            data-id="{{id}}" data-path="{{path}}" data-x="{{x}}"
+            bindtouchstart="onSwipeStart" bindtouchmove="onSwipeMove" bindtouchend="onSwipeEnd"
+            bindtap="onSwipeTap">
+        <view class="task-row {{cls}}">
+          <view class="check" data-id="{{id}}" catchtap="onCheck">{{checked ? '✓' : ''}}</view>
+          <view class="task-main">
+            <text class="task-title">{{title}}</text>
+            <view class="task-tags" wx:if="{{tags.length > 0}}">
+              <text wx:for="{{tags}}" wx:for-item="tag" wx:key="text" class="tag {{tag.type}}">{{tag.text}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</template>

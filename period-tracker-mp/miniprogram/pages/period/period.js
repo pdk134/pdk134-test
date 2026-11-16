@@ -12,17 +12,15 @@ Page({
   data: {
     theme: 'light',
     tab: 'calendar',                 // calendar | stats
-    syncText: '',
 
     // 日历
-    viewYear: 0, viewMonth: 0, monthTitle: '',
+    viewYear: 0, viewMonth: 0, monthTitle: '', pickerValue: '',
     weekNames: ['一', '二', '三', '四', '五', '六', '日'],
     blanks: [], days: [],
     selectedDate: '',
     statusMain: '', statusSub: '', statusTag: '',
 
     // 记录
-    logDateLabel: '', logDateSub: '',
     isPeriod: false, periodBtnText: '',
     showEndBtn: false, endBtnText: '', endClosed: false,
     symptoms: [], moods: [], note: '',
@@ -45,10 +43,8 @@ Page({
       symptoms: Store.SYMPTOMS.map(function (s) { return { id: s.id, label: s.label, on: false }; }),
       moods: Store.MOODS.map(function (m) { return { id: m.id, emoji: m.emoji, label: m.label, on: false }; })
     });
-    Cloud.onChange(function () { this.updateSync(); }.bind(this));
-    Cloud.init().then(function () { this.renderAll(); this.updateSync(); }.bind(this));
+    Cloud.init().then(function () { this.renderAll(); }.bind(this));
     this.renderAll();
-    this.updateSync();
   },
 
   onShow: function () {
@@ -60,16 +56,6 @@ Page({
 
   onHide: function () { this.persistNote(); },
   onUnload: function () { this.persistNote(); },
-
-  updateSync: function () {
-    var s = Cloud.state(), parts = [];
-    if (!s.cloudReady) parts.push('离线模式（数据只存本机）');
-    else if (s.status === 'error') parts.push('同步异常');
-    else if (s.status === 'syncing') parts.push('正在同步…');
-    else parts.push('云端已同步');
-    if (s.message) parts.push(s.message);
-    this.setData({ syncText: parts.join(' · ') });
-  },
 
   /* ---------------- 分段切换 ---------------- */
   switchTab: function (e) {
@@ -162,21 +148,6 @@ Page({
     this.flushNote();
     this.setData({ selectedDate: e.currentTarget.dataset.date, tab: 'calendar' });
     this.renderAll();
-    this.revealPanel();
-  },
-
-  /** 选中日期后，若下方操作卡还在屏幕外，轻滚过去 */
-  revealPanel: function () {
-    wx.nextTick(function () {
-      wx.createSelectorQuery().select('#dayPanel').boundingClientRect(function (r) {
-        if (!r) return;
-        var h = 0;
-        try { h = (wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync()).windowHeight; } catch (err) { return; }
-        if (h && r.top > h - 140) {
-          wx.pageScrollTo({ selector: '#dayPanel', offsetTop: -12, duration: 260 });
-        }
-      }).exec();
-    });
   },
 
   /* ---------------- 状态卡 ---------------- */
@@ -223,10 +194,7 @@ Page({
   /* ---------------- 当天操作卡 ---------------- */
   renderLog: function () {
     var sel = this.data.selectedDate || Store.todayStr();
-    var d = Store.parseDate(sel), t = Store.today();
-    var diff = Store.diffDays(t, d);
-    var label = Store.fmtCN(d);
-    var sub = sel === Store.todayStr() ? '今天' : (diff < 0 ? (-diff + ' 天前') : (diff + ' 天后'));
+    var d = Store.parseDate(sel);
 
     var isPeriod = Store.isPeriodDay(sel);
     var periods = Store.getPeriods();
@@ -242,7 +210,6 @@ Page({
     var showEnd = !!cur, endText = '';
     if (cur && !closed) endText = '🛑 经期到此结束（' + Store.fmtShort(d) + '）';
     else if (cur && closed) endText = '✅ 经期已结束于 ' + Store.fmtShort(Store.parseDate(cur.end)) + '（点击恢复延续预测）';
-    if (!isPeriod && inOngoing && !closed) sub += ' · 预计经期内，待确认';
 
     var log = Store.getLog(sel);
     var symptoms = Store.SYMPTOMS.map(function (s) {
@@ -254,28 +221,10 @@ Page({
 
     this._noteDraft = log.note || '';
     this.setData({
-      logDateLabel: label, logDateSub: sub,
       isPeriod: isPeriod, periodBtnText: btnText,
       showEndBtn: showEnd, endBtnText: endText, endClosed: closed,
       symptoms: symptoms, moods: moods, note: log.note || ''
     });
-  },
-
-  prevDay: function () {
-    this.flushNote();
-    var sel = Store.fmt(Store.addDays(Store.parseDate(this.data.selectedDate), -1));
-    this.setData({ selectedDate: sel });
-    this.renderCalendar(Store.parseDate(sel).getFullYear(), Store.parseDate(sel).getMonth() + 1);
-    this.renderLog();
-    this.renderStatus();
-  },
-  nextDay: function () {
-    this.flushNote();
-    var sel = Store.fmt(Store.addDays(Store.parseDate(this.data.selectedDate), 1));
-    this.setData({ selectedDate: sel });
-    this.renderCalendar(Store.parseDate(sel).getFullYear(), Store.parseDate(sel).getMonth() + 1);
-    this.renderLog();
-    this.renderStatus();
   },
 
   togglePeriod: function () {
@@ -407,16 +356,6 @@ Page({
       alertTitle: alertTitle, alertDesc: alertDesc, alertLevel: alertLevel,
       nextDate: nextDate, nextSub: nextSub,
       bars: bars, history: history
-    });
-  },
-
-  syncNow: function () {
-    var self = this;
-    wx.showLoading({ title: '同步中' });
-    Cloud.pull(false).then(function () {
-      wx.hideLoading();
-      self.renderAll(); self.updateSync();
-      wx.showToast({ title: '同步完成', icon: 'none', duration: 1500 });
     });
   }
 });
