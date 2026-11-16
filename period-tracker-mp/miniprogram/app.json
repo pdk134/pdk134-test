@@ -3,7 +3,8 @@
     "pages/calendar/calendar",
     "pages/list/list",
     "pages/period/period",
-    "pages/me/me"
+    "pages/me/me",
+    "pages/about/about"
   ],
   "window": {
     "navigationBarTitleText": "任务清单",

@@ -1,0 +1,47 @@
+/* ===== 关于页专属样式（复用 app.wxss 的 .page/.panel-card/.section-title/.action-btn） ===== */
+
+.about-hero { text-align: center; padding: 40rpx 24rpx 32rpx; }
+.about-logo {
+  width: 110rpx; height: 110rpx; line-height: 110rpx;
+  margin: 0 auto 20rpx; border-radius: 28rpx;
+  background: var(--primary); color: #fff; font-size: 52rpx;
+}
+.about-name { font-size: 36rpx; font-weight: 700; }
+.about-version { font-size: 23rpx; color: var(--text-secondary); margin-top: 8rpx; }
+.about-desc {
+  font-size: 25rpx; color: var(--text-secondary);
+  line-height: 1.7; margin-top: 18rpx;
+}
+
+.feat-row {
+  display: flex; align-items: flex-start;
+  padding: 18rpx 0; border-bottom: 1rpx solid var(--border);
+}
+.feat-row:last-child { border-bottom: none; padding-bottom: 0; }
+.feat-icon { width: 62rpx; font-size: 32rpx; }
+.feat-text { flex: 1; }
+.feat-title { font-size: 27rpx; font-weight: 600; }
+.feat-sub {
+  font-size: 23rpx; color: var(--text-secondary);
+  line-height: 1.6; margin-top: 6rpx;
+}
+
+.faq-q {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 27rpx; padding: 20rpx 0;
+  border-bottom: 1rpx solid var(--border);
+}
+.faq-arrow { color: var(--primary); font-size: 26rpx; margin-left: 16rpx; }
+.faq-a {
+  font-size: 24rpx; color: var(--text-secondary);
+  line-height: 1.7; padding: 16rpx 0 20rpx;
+  border-bottom: 1rpx solid var(--border);
+}
+
+button.action-btn { line-height: 1.5; text-align: left; }
+button.action-btn::after { border: none; }
+
+.about-foot {
+  text-align: center; font-size: 22rpx; color: var(--text-secondary);
+  line-height: 1.8; margin-top: 32rpx; padding: 0 20rpx;
+}

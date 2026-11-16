@@ -3,7 +3,7 @@
  *
  * 与网页版保持同一套字段和 LWW 规则，方便以后互相迁移：
  *   { id, title, note, due_date, status, priority, defer_count,
- *     completed_at, deleted_at, created_at, updated_at }
+ *     original_due_date, completed_at, deleted_at, created_at, updated_at }
  * 差异：localStorage -> wx.setStorageSync；window.TaskStore -> module.exports
  * ========================================================= */
 
@@ -90,6 +90,7 @@ function create(fields) {
     status: 'todo',
     priority: Number(fields.priority) || 0,
     defer_count: 0,
+    original_due_date: null,
     completed_at: null,
     deleted_at: null,
     created_at: nowISO(),
@@ -118,6 +119,7 @@ function deferTo(id, dateStr) {
   var t = tasks[id]; if (!t || t.deleted_at) return null;
   var next = normDate(dateStr);
   if (next === t.due_date) return t;
+  if (!t.original_due_date) t.original_due_date = t.due_date;
   t.due_date = next;
   t.defer_count = (t.defer_count || 0) + 1;
   if (t.status === 'done') { t.status = 'todo'; t.completed_at = null; }
@@ -159,6 +161,7 @@ function rowToTask(r) {
     status: r.status === 'done' ? 'done' : 'todo',
     priority: Number(r.priority) || 0,
     defer_count: Number(r.defer_count) || 0,
+    original_due_date: r.original_due_date ? normDate(r.original_due_date) : '',
     completed_at: r.completed_at || null,
     deleted_at: r.deleted_at || null,
     created_at: r.created_at || nowISO(),
@@ -193,6 +196,7 @@ function toRow(t) {
     id: t.id, title: t.title, note: t.note || '', due_date: t.due_date,
     status: t.status === 'done' ? 'done' : 'todo',
     priority: Number(t.priority) || 0, defer_count: Number(t.defer_count) || 0,
+    original_due_date: t.original_due_date || '',
     completed_at: t.completed_at || null, deleted_at: t.deleted_at || null,
     created_at: t.created_at, updated_at: t.updated_at
   };

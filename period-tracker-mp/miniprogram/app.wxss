@@ -55,7 +55,6 @@
 .hidden { display: none; }
 
 .section-title { font-size: 30rpx; font-weight: 600; margin-bottom: 12rpx; }
-.panel-desc { font-size: 25rpx; color: var(--text-secondary); line-height: 1.7; }
 .empty-hint {
   color: var(--text-secondary);
   font-size: 26rpx;
@@ -104,6 +103,11 @@
 /* ===== 当天面板 ===== */
 .day-title { font-size: 30rpx; font-weight: 600; }
 .day-count { font-size: 24rpx; color: var(--text-secondary); margin: 6rpx 0 16rpx; }
+.day-meta {
+  display: flex; align-items: center; justify-content: space-between;
+  margin: 6rpx 0 16rpx;
+}
+.day-meta .day-count, .day-meta .swipe-tip { margin: 0; padding: 0; }
 .quick-add { display: flex; align-items: center; margin-top: 16rpx; }
 .quick-input {
   flex: 1; height: 72rpx; background: var(--input-bg);
@@ -139,10 +143,65 @@
   border-radius: 8rpx; padding: 2rpx 10rpx; margin-right: 8rpx; margin-top: 4rpx;
 }
 .tag.overdue { color: var(--overdue); background: var(--overdue-bg); }
+.tag.defer { color: var(--text-secondary); background: var(--input-bg); }
 .more {
   width: 56rpx; height: 56rpx; line-height: 48rpx; text-align: center;
   font-size: 34rpx; color: var(--text-secondary); background: transparent; padding: 0;
 }
+
+/* ===== 左滑任务行（日历页 / 清单页） ===== */
+.swipe-wrap {
+  position: relative;
+  border-bottom: 1rpx solid var(--border);
+}
+.swipe-wrap:last-child { border-bottom: none; }
+.swipe-clip { position: relative; overflow: hidden; }
+.swipe-actions {
+  position: absolute; top: 0; right: 0; bottom: 0;
+  width: 260rpx; display: flex;
+}
+.swipe-btn {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  font-size: 25rpx; color: #fff;
+}
+.swipe-btn.defer { background: var(--accent); }
+.swipe-btn.del { background: var(--overdue); }
+.swipe-tip {
+  font-size: 21rpx; color: var(--text-secondary);
+  text-align: right; padding: 0 4rpx 10rpx;
+}
+.swipe-content { position: relative; background: var(--card); }
+.swipe-content.anim { transition: transform 0.22s ease; }
+.swipe-content .task-row { border-bottom: none; }
+
+/* 推迟：浮在「推迟」按钮上方的小框 */
+.defer-pop {
+  position: absolute; right: -15rpx; bottom: 100%; margin-bottom: 10rpx;
+  width: 420rpx; box-sizing: border-box;
+  z-index: 30; display: flex; align-items: center; justify-content: space-between;
+  background: var(--card); border: 1rpx solid var(--border);
+  border-radius: 16rpx; box-shadow: var(--shadow);
+  padding: 14rpx 16rpx; white-space: nowrap;
+}
+.defer-stepper { display: flex; align-items: center; }
+.step-btn {
+  width: 44rpx; height: 44rpx; line-height: 40rpx; text-align: center;
+  border-radius: 12rpx; background: var(--primary-light);
+  color: var(--primary-dark); font-size: 28rpx;
+}
+.step-btn.off { opacity: 0.45; }
+.step-input {
+  width: 84rpx; height: 44rpx; margin: 0 6rpx; text-align: center;
+  background: var(--input-bg); border: 1rpx solid var(--border);
+  border-radius: 12rpx; font-size: 26rpx; color: var(--text);
+}
+.step-unit { font-size: 24rpx; color: var(--text-secondary); margin: 0 4rpx; }
+.defer-actions { display: flex; align-items: center; }
+.defer-btn {
+  padding: 8rpx 14rpx; border-radius: 12rpx; font-size: 23rpx;
+}
+.defer-btn.ok { background: var(--primary); color: #fff; }
+.defer-btn.ghost { background: var(--input-bg); color: var(--text-secondary); margin-left: 8rpx; }
 
 /* ===== 统计 / 分组 ===== */
 .stat-row { display: flex; margin-bottom: 20rpx; }
@@ -183,7 +242,6 @@
   background: var(--primary-light); color: var(--primary-dark);
   border-radius: 14rpx; padding: 10rpx 26rpx; font-size: 25rpx;
 }
-.privacy-note { text-align: center; font-size: 22rpx; color: var(--text-secondary); line-height: 1.7; margin-top: 24rpx; }
 
 /* ===== 弹层 ===== */
 .modal-mask {

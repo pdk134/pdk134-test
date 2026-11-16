@@ -29,12 +29,14 @@
   <view class="card">
     <view class="row between">
       <text class="day-title">{{dayTitle}}</text>
-      <text class="muted" bindtap="addTask">＋ 新建</text>
     </view>
-    <view class="day-count">{{dayCount}}</view>
+    <view wx:if="{{dayCount}}" class="day-meta">
+      <view class="day-count">{{dayCount}}</view>
+      <view class="swipe-tip">← 左滑任务可推迟或删除</view>
+    </view>
     <view class="task-list">
       <block wx:for="{{dayTasks}}" wx:key="id">
-        <template is="taskRow" data="{{...item}}" />
+        <template is="swipeTaskRow" data="{{...item, deferForId: deferForId, deferDays: deferDays}}" />
       </block>
       <view wx:if="{{dayTasks.length === 0}}" class="empty-hint">这一天还没有任务</view>
     </view>

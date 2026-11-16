@@ -10,6 +10,8 @@
     <view class="stat-card"><text class="num">{{statRate}}</text><text class="label">本周完成率</text></view>
   </view>
 
+  <view wx:if="{{groups.length > 0}}" class="swipe-tip">← 左滑任务可推迟或删除</view>
+
   <block wx:for="{{groups}}" wx:key="key" wx:for-item="group">
     <view class="group-card">
       <view class="group-head" data-group="{{group.key}}" bindtap="toggleGroup">
@@ -18,7 +20,7 @@
       </view>
       <view class="task-list">
         <block wx:for="{{group.tasks}}" wx:key="id">
-          <template is="taskRow" data="{{...item}}" />
+          <template is="swipeTaskRow" data="{{...item, deferForId: deferForId, deferDays: deferDays}}" />
         </block>
       </view>
       <view wx:if="{{group.collapsed}}" class="expand-btn" bindtap="expandDone">
@@ -30,8 +32,6 @@
   <view wx:if="{{groups.length === 0}}" class="card">
     <view class="empty-hint">还没有任务，去日历挑一天安排上吧</view>
   </view>
-
-  <view class="add-btn" style="text-align:center;" bindtap="addTask">＋ 新建任务</view>
 
 </view>
 

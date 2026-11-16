@@ -2,6 +2,7 @@ var Cloud = require('../../utils/cloud.js');
 var Store = require('../../utils/store.js');
 var PeriodCloud = require('../../utils/period-cloud.js');
 var PeriodStore = require('../../utils/period-store.js');
+var Remind = require('../../utils/remind.js');
 
 Page({
   data: {
@@ -11,11 +12,13 @@ Page({
     openidShort: '',
     taskCount: 0,
     periodCount: 0,
-    cloudReady: false
+    cloudReady: false,
+    remindEnabled: true,
+    remindHint: ''
   },
 
   onLoad: function () {
-    this.setData({ theme: getApp().globalData.theme });
+    this.setData({ theme: getApp().globalData.theme, remindEnabled: Remind.enabled() });
     Cloud.onChange(function () { this.updateStatus(); }.bind(this));
     PeriodCloud.onChange(function () { this.updateStatus(); }.bind(this));
     Cloud.init().then(function () { this.updateStatus(); }.bind(this));
@@ -56,22 +59,35 @@ Page({
       openidShort: openid ? '微信用户 ' + openid.slice(0, 8) : '未取到 openid（不影响使用）',
       cloudReady: s.cloudReady && ps.cloudReady,
       taskCount: Store.all().length,
-      periodCount: PeriodStore.getPeriods().length
+      periodCount: PeriodStore.getPeriods().length,
+      remindHint: this.remindHintText()
     });
   },
 
-  syncNow: function () {
-    var self = this;
-    wx.showLoading({ title: '同步中' });
-    Promise.all([Cloud.pull(false), PeriodCloud.pull(false)]).then(function () {
-      wx.hideLoading();
-      self.updateStatus();
-      wx.showToast({ title: '同步完成', icon: 'none', duration: 1500 });
-    });
+  remindHintText: function () {
+    if (!this.data.remindEnabled) return '';
+    var rs = Remind.status();
+    if (rs.blocked) return '⚠️ 微信里已关闭本小程序的通知，需到「设置 → 订阅消息」里重新允许';
+    if (!rs.count) return '今日尚未续期，操作任意任务或点一下日期即可';
+    return '今日已自动续期 ' + rs.count + ' 次 · 累计授权 ' + rs.accepted + ' 次';
   },
 
-  goPeriod: function () {
-    wx.switchTab({ url: '/pages/period/period' });
+  goAbout: function () {
+    wx.navigateTo({ url: '/pages/about/about' });
+  },
+
+  sendTestRemind: function () {
+    Remind.sendTest();
+  },
+
+  toggleRemind: function () {
+    var next = !this.data.remindEnabled;
+    Remind.setEnabled(next);
+    this.setData({ remindEnabled: next });
+    wx.showToast({ title: next ? '已开启提醒' : '已关闭提醒', icon: 'none', duration: 1200 });
+    // 主动开启时立刻申请一次额度（点击上下文合法，跳过节流）
+    if (next) Remind.ensureAuth(true);
+    this.updateStatus();
   },
 
   toggleTheme: function () {
