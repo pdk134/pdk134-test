@@ -106,7 +106,7 @@ Page(Object.assign({
     var sel = Store.parseDate(this.data.selectedDate);
     var same = (sel.getFullYear() === y && sel.getMonth() === m - 1);
     if (!same) {
-      var t = Store.today();
+      var t = Store.parseDate(Store.todayStr());
       var nd = (t.getFullYear() === y && t.getMonth() === m - 1) ? t : new Date(y, m - 1, 1);
       this.setData({ selectedDate: Store.fmtDate(nd) });
     }
@@ -116,7 +116,8 @@ Page(Object.assign({
 
   /* 顶部月份标题 -> 微信原生年月选择器 */
   onPickMonth: function (e) {
-    var v = (e.detail.value || '').split('-');
+    var raw = (e && e.detail && e.detail.value) || '';
+    var v = String(raw).split('-');
     var y = parseInt(v[0], 10), m = parseInt(v[1], 10);
     if (!y || !m) return;
     this.jumpMonth(y, m);
