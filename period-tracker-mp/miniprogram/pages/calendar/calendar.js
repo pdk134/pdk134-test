@@ -11,7 +11,8 @@ Page(Object.assign({
   data: {
     theme: 'light',
     viewYear: 0, viewMonth: 0,
-    monthTitle: '', weekNames: ['一', '二', '三', '四', '五', '六', '日'],
+    monthTitle: '', pickerValue: '',
+    weekNames: ['一', '二', '三', '四', '五', '六', '日'],
     blanks: [], days: [],
     selectedDate: '', dayTitle: '', dayCount: '', dayTasks: [],
     quickValue: '',
@@ -136,6 +137,7 @@ Page(Object.assign({
     this.setData({ selectedDate: s });
     this.renderCalendar(this.data.viewYear, this.data.viewMonth, s);
     this.renderDay(s);
+    Remind.ensureAuth();
   },
   onQuickInput: function (e) { this.setData({ quickValue: e.detail.value }); },
   quickAdd: function () {
@@ -145,6 +147,6 @@ Page(Object.assign({
     this.setData({ quickValue: '' });
     wx.showToast({ title: '已添加', icon: 'none', duration: 1200 });
     Actions.change(this);
-    if (this.data.selectedDate >= Store.todayStr()) Remind.requestAuth();
+    if (this.data.selectedDate >= Store.todayStr()) Remind.ensureAuth();
   }
 }, Actions.createHandlers()));

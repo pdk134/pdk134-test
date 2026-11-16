@@ -13,7 +13,8 @@ Page({
     taskCount: 0,
     periodCount: 0,
     cloudReady: false,
-    remindEnabled: true
+    remindEnabled: true,
+    remindHint: ''
   },
 
   onLoad: function () {
@@ -58,8 +59,17 @@ Page({
       openidShort: openid ? '微信用户 ' + openid.slice(0, 8) : '未取到 openid（不影响使用）',
       cloudReady: s.cloudReady && ps.cloudReady,
       taskCount: Store.all().length,
-      periodCount: PeriodStore.getPeriods().length
+      periodCount: PeriodStore.getPeriods().length,
+      remindHint: this.remindHintText()
     });
+  },
+
+  remindHintText: function () {
+    if (!this.data.remindEnabled) return '';
+    var rs = Remind.status();
+    if (rs.blocked) return '⚠️ 微信里已关闭本小程序的通知，需到「设置 → 订阅消息」里重新允许';
+    if (!rs.count) return '今日尚未续期，操作任意任务或点一下日期即可';
+    return '今日已自动续期 ' + rs.count + ' 次 · 累计授权 ' + rs.accepted + ' 次';
   },
 
   goAbout: function () {
@@ -75,6 +85,9 @@ Page({
     Remind.setEnabled(next);
     this.setData({ remindEnabled: next });
     wx.showToast({ title: next ? '已开启提醒' : '已关闭提醒', icon: 'none', duration: 1200 });
+    // 主动开启时立刻申请一次额度（点击上下文合法，跳过节流）
+    if (next) Remind.ensureAuth(true);
+    this.updateStatus();
   },
 
   toggleTheme: function () {

@@ -14,7 +14,7 @@ Page({
     tab: 'calendar',                 // calendar | stats
 
     // 日历
-    viewYear: 0, viewMonth: 0, monthTitle: '',
+    viewYear: 0, viewMonth: 0, monthTitle: '', pickerValue: '',
     weekNames: ['一', '二', '三', '四', '五', '六', '日'],
     blanks: [], days: [],
     selectedDate: '',

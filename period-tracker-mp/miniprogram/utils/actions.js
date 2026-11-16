@@ -4,6 +4,7 @@
  * ========================================================= */
 var Store = require('./store.js');
 var Cloud = require('./cloud.js');
+var Remind = require('./remind.js');
 
 function fmtCN(dateStr) {
   var p = String(dateStr).split('-');
@@ -136,6 +137,8 @@ function createHandlers() {
       Store.setDone(id, done);
       wx.showToast({ title: done ? '已完成' : '已改回待办', icon: 'none', duration: 1200 });
       change(this);
+      // 顺手补一次订阅额度（一次性订阅：授权一次只能发一条，额度会随使用消耗）
+      Remind.ensureAuth();
     },
 
     onSwipeDefer: function (e) {
@@ -180,6 +183,7 @@ function createHandlers() {
       closeRow(this, e.currentTarget.dataset.path);
       wx.showToast({ title: '已推迟 ' + n + ' 天', icon: 'none', duration: 1200 });
       change(this);
+      Remind.ensureAuth();
     },
 
     noop: function () {},
@@ -246,6 +250,7 @@ function createHandlers() {
       this.setData({ editorVisible: false, editorId: '', editorTask: null });
       wx.showToast({ title: id ? '已保存' : '已添加', icon: 'none', duration: 1200 });
       change(this);
+      Remind.ensureAuth();
     }
   };
 }

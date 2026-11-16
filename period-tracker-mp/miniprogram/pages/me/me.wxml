@@ -18,10 +18,11 @@
   <view class="panel-card">
     <view class="section-title">⏰ 待办提醒</view>
     <view class="theme-row">
-      <text>提前 1 天提醒</text>
+      <text>每天 8:00 提醒当天与次日待办</text>
       <view class="switch-btn" bindtap="toggleRemind">{{remindEnabled ? '已开启' : '已关闭'}}</view>
     </view>
-    <view class="acct-status">新建任务时申请微信通知授权；一次性订阅，授权一次可接收一条提醒</view>
+    <view class="acct-status">一次性订阅：授权一次可接收一条提醒。新建、完成、推迟任务或点日期时会自动补一次授权，额度不够时不再重复弹窗</view>
+    <view class="acct-status" wx:if="{{remindHint}}">{{remindHint}}</view>
     <view class="action-btn" bindtap="sendTestRemind">
       发送测试提醒
       <text class="sub">从小程序内触发，立即给自己发一条</text>
