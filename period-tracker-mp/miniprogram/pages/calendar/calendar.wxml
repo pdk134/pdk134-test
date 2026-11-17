@@ -36,7 +36,7 @@
     </view>
     <view class="task-list">
       <block wx:for="{{dayTasks}}" wx:key="id">
-        <template is="swipeTaskRow" data="{{...item, deferForId: deferForId, deferDays: deferDays}}" />
+        <template is="swipeTaskRow" data="{{...item, deferForId: deferForId, deferDays: deferDays, editingId: editingId, editingText: editingText}}" />
       </block>
       <view wx:if="{{dayTasks.length === 0}}" class="empty-hint">这一天还没有任务</view>
     </view>

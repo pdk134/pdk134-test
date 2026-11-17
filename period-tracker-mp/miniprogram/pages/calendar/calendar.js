@@ -21,7 +21,8 @@ Page(Object.assign({
     beforeIndex: 0,
     swipeOpenPath: '',
     deferForId: '', deferDays: 1,
-    editorVisible: false, editorId: '', editorTask: null, editorDate: ''
+    editorVisible: false, editorTask: null, editorDate: '',
+    editingId: '', editingText: ''
   },
 
   onLoad: function () {
@@ -100,7 +101,8 @@ Page(Object.assign({
         v.path = 'dayTasks[' + i + '].x';
         return v;
       }),
-      swipeOpenPath: ''
+      swipeOpenPath: '',
+      editingId: '', editingText: ''
     });
   },
 
