@@ -186,12 +186,19 @@ async function writeLog(doc) {
   }
 }
 
-/** 顺手清理过期日志；集合未建或为空时静默跳过 */
+/**
+ * 清理过期日志；集合未建或为空时静默跳过。
+ * 只在每天 8:00 的汇总里调用一次——触发器每分钟跑，跟着清会把删除请求放大 1440 倍。
+ * 返回删除条数，便于在 run 日志里观察。
+ */
 async function pruneLog() {
   try {
     var cutoff = Date.now() - LOG_KEEP_DAYS * 24 * 60 * 60 * 1000;
-    await db.collection(LOG_COLLECTION).where({ ts: _.lt(cutoff) }).remove();
-  } catch (e) { /* 忽略 */ }
+    var r = await db.collection(LOG_COLLECTION).where({ ts: _.lt(cutoff) }).remove();
+    var n = (r && r.stats && r.stats.removed) || 0;
+    if (n) console.log('[remind] 已清理过期日志', n, '条');
+    return n;
+  } catch (e) { return 0; }
 }
 
 function buildData(fields, values) {
@@ -282,7 +289,7 @@ exports.main = async (event) => {
   var summary = {
     minute: minute, dryRun: dry,
     at: { users: 0, tasks: 0, sent: 0, failed: [] },
-    daily: null, logError: ''
+    daily: null, pruned: 0, logError: ''
   };
 
   /* ---------- 1. 到点提醒（设了具体时间的任务） ---------- */
@@ -412,13 +419,17 @@ exports.main = async (event) => {
         }) || summary.logError;
       }
     }
+
+    // 维护动作一天一次就够：清理过期日志固定跟着 8:00 这趟汇总跑，dryRun 时不动数据
+    if (!dry) summary.pruned = await pruneLog();
   }
 
-  // 每分钟都写 run 日志会产生大量无用数据，只在有动作或跑了汇总时记一条
-  if (summary.at.sent || summary.at.failed.length || summary.daily) {
+  // 每分钟都写 run 日志会产生大量无用数据，只在有动作或跑了汇总时记一条；dryRun 不留痕
+  if (!dry && (summary.at.sent || summary.at.failed.length || summary.daily)) {
     summary.logError = await writeLog({
       type: 'run', ok: true, minute: minute,
       atTasks: summary.at.tasks, atSent: summary.at.sent,
+      pruned: summary.pruned || 0,
       daily: summary.daily ? {
         tasks: summary.daily.tasks, users: summary.daily.users,
         sent: summary.daily.sent, failedCount: summary.daily.failed.length
@@ -426,7 +437,6 @@ exports.main = async (event) => {
     }) || summary.logError;
   }
 
-  await pruneLog();
   console.log('[remind] 汇总', JSON.stringify(summary));
   return summary;
 };
