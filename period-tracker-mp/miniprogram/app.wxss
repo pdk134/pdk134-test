@@ -147,6 +147,13 @@
 .task-row.done .check { background: var(--primary); }
 .task-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .task-title { font-size: 28rpx; word-break: break-all; }
+/* 行内改标题：视觉与原文字接近，只多一圈主色描边 */
+.task-title-input {
+  width: 100%; box-sizing: border-box; height: 56rpx;
+  font-size: 28rpx; color: var(--text);
+  background: var(--input-bg); border: 1rpx solid var(--primary);
+  border-radius: 8rpx; padding: 0 12rpx;
+}
 .task-row.done .task-title { text-decoration: line-through; color: var(--text-secondary); }
 .task-row.overdue .task-title { color: var(--overdue); }
 .task-tags { display: flex; flex-wrap: wrap; margin-top: 6rpx; }

@@ -17,7 +17,8 @@ Page(Object.assign({
     statTodo: 0, statDone: 0, statRate: '–', headerSub: '',
     groups: [], doneCollapsed: true,
     swipeOpenPath: '', deferForId: '', deferDays: 1,
-    editorVisible: false, editorId: '', editorTask: null, editorDate: '', selectedDate: ''
+    editorVisible: false, editorTask: null, editorDate: '', selectedDate: '',
+    editingId: '', editingText: ''
   },
 
   onLoad: function () {
@@ -82,7 +83,8 @@ Page(Object.assign({
         : '今天没有安排，享受吧 ✨',
       groups: groups,
       swipeOpenPath: '',
-      selectedDate: today
+      selectedDate: today,
+      editingId: '', editingText: ''
     });
   },
 
