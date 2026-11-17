@@ -32,7 +32,7 @@
     </view>
     <view wx:if="{{dayCount}}" class="day-meta">
       <view class="day-count">{{dayCount}}</view>
-      <view class="swipe-tip">← 左滑任务可推迟或删除</view>
+      <view class="swipe-tip">← 左滑任务可编辑、推迟或删除</view>
     </view>
     <view class="task-list">
       <block wx:for="{{dayTasks}}" wx:key="id">
