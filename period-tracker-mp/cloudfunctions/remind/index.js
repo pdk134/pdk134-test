@@ -38,8 +38,8 @@ function parseKeys(text) {
 
 /**
  * 直接问微信要这个模板的真实字段名，不再猜编号。
- * getTemplateList 返回的 content 形如「日程时间:{{date4.DATA}} 日程标题:{{thing1.DATA}}…」，
- * 按出现顺序对应 日程时间 / 日程标题 / 提醒内容。
+ * getTemplateList 返回的 content 形如「日程提醒:{{thing1.DATA}} …」，
+ * 角色由字段名类型识别（见 pickFields），字段顺序调整后无需改代码。
  * 接口不可用时回退到内置的 FIELD_SETS 候选组。
  */
 async function getFieldSets() {
@@ -64,13 +64,30 @@ async function getFieldSets() {
     if (keys.length < 3) keys = parseKeys(String(tpl.example || ''));
     if (keys.length < 3) return FIELD_SETS;
 
-    var auto = { due: keys[0], title: keys[1], tip: keys[2] };
+    var auto = pickFields(keys);
+    if (!auto) return FIELD_SETS;
     console.log('[remind] 模板字段（自动读取）', JSON.stringify(auto));
     return [auto].concat(FIELD_SETS);
   } catch (e) {
     console.warn('[remind] 自动读取模板字段失败，改用候选组', e && (e.errMsg || e.errmsg || e.message));
     return FIELD_SETS;
   }
+}
+
+/**
+ * 按字段名类型识别角色，不按位置：time 或 date 开头的是日程时间，
+ * 其余 thing* 按出现顺序第一个当标题、第二个当内容。
+ * 模板里三个字段的先后顺序随便调（卡片显示顺序由模板决定），映射都不会错位。
+ */
+function pickFields(keys) {
+  var due = null, things = [];
+  for (var i = 0; i < keys.length; i++) {
+    var k = keys[i];
+    if (!due && (/^time/.test(k) || /^date/.test(k))) due = k;
+    else things.push(k);
+  }
+  if (due && things.length >= 2) return { due: due, title: things[0], tip: things[1] };
+  return null;
 }
 
 function pad(n) { return n < 10 ? '0' + n : String(n); }
@@ -154,11 +171,30 @@ async function alreadySent(openid, minute) {
   } catch (e) { return false; }
 }
 
-/** 通知正文：两天的件数合并成一句，thing 类型限 20 字，超出由 clipThing 截断 */
+/** 标题行的概览文案：有今天用今天兜底，两天都有就合并口径 */
 function buildTip(a, b) {
-  if (a && b) return '今天' + a + '件，明天' + b + '件';
+  if (a && b) return '今明两天共' + (a + b) + '件待办';
   if (a) return '今天有' + a + '件待办';
   return '明天有' + b + '件待办';
+}
+
+/**
+ * 内容行：把任务名串成一条 ≤max 字的摘要。
+ * 能列则逐条列（、分隔），列不完时以「等N件」收尾，让总数一目了然；
+ * 第一条就放不下时退化为单条截断。
+ */
+function joinTitles(titles, max) {
+  var parts = [], leftover = 0;
+  for (var i = 0; i < titles.length; i++) {
+    var t = clipThing(titles[i]);
+    var next = parts.length ? parts.join('、') + '、' + t : t;
+    if (next.length > max - 4) { leftover = titles.length - i; break; }  // 预留「等N件」的位置
+    parts.push(t);
+  }
+  if (!parts.length) return clipThing(titles[0]);
+  var s = parts.join('、');
+  if (leftover) s += '等' + titles.length + '件';
+  return s;
 }
 /** 没勾「总是保持以上选择」时，第二天大概率额度已空，给个可读的原因 */
 function hintReason(reason) {
@@ -324,7 +360,7 @@ exports.main = async (event) => {
       var timeA = String(firstA.due_time || '').slice(0, 5);
       var valuesA = {
         title: clipThing(firstA.title),
-        tip: clipThing(listA.length > 1 ? '有' + listA.length + '件事到点了' : '时间到了，开始吧')
+        tip: joinTitles(listA.map(function (x) { return x.title; }), 20)
       };
       var rA = await sendWithFallback(
         oidA, String(firstA.due_date || '').slice(0, 10), valuesA, timeA
@@ -388,12 +424,13 @@ exports.main = async (event) => {
       for (var i = 0; i < openids.length; i++) {
         var oid = openids[i];
         var g = groups[oid];
-        // 有今天的任务就用今天做主日期（标题取第一条），否则退到明天
+        // 有今天的任务就用今天做主日期；标题给概览，内容列具体事项
         var primary = g.today.length ? g.today : g.tomorrow;
         var primaryDate = g.today.length ? today : tomorrow;
         var values = {
-          title: clipThing(primary[0].title),
-          tip: clipThing(buildTip(g.today.length, g.tomorrow.length))
+          title: clipThing(buildTip(g.today.length, g.tomorrow.length)),
+          tip: joinTitles(
+            g.today.concat(g.tomorrow).map(function (x) { return x.title; }), 20)
         };
         var r = await sendWithFallback(oid, primaryDate, values, '');
         var reason = r.ok ? '' : hintReason(r.reason);
