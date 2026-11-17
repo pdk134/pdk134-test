@@ -18,7 +18,7 @@
   <view class="panel-card">
     <view class="section-title">⏰ 待办提醒</view>
     <view class="theme-row">
-      <text>每天 8:00 提醒当天与次日待办</text>
+      <text>设了时间的任务到点提醒，其余每天 8:00 汇总</text>
       <view class="switch-btn" bindtap="toggleRemind">{{remindEnabled ? '已开启' : '已关闭'}}</view>
     </view>
     <view class="acct-status">一次性订阅：授权一次可接收一条提醒。新建、完成、推迟任务或点日期时会自动补一次授权，额度不够时不再重复弹窗</view>

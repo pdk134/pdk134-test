@@ -43,7 +43,16 @@
     <view class="quick-add">
       <input class="quick-input" value="{{quickValue}}" placeholder="添加这一天的待办，回车/点＋"
              confirm-type="done" bindinput="onQuickInput" bindconfirm="quickAdd" />
+      <picker mode="time" value="{{quickTime || '09:00'}}" bindchange="onQuickTime">
+        <view class="quick-time {{quickTime ? '' : 'empty'}}">{{quickTime || '设时间'}}</view>
+      </picker>
       <view class="add-btn" bindtap="quickAdd">＋</view>
+    </view>
+    <view wx:if="{{quickTime}}" class="quick-before">
+      <picker range="{{beforeLabels}}" value="{{beforeIndex}}" bindchange="onQuickBefore">
+        <view class="quick-before-pill">{{beforeLabels[beforeIndex]}} ▾</view>
+      </picker>
+      <text class="quick-before-tip">选「到点提醒」则准点提醒</text>
     </view>
   </view>
 

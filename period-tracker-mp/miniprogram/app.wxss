@@ -118,6 +118,18 @@
   margin-left: 12rpx; height: 72rpx; line-height: 72rpx; padding: 0 26rpx;
   background: var(--primary); color: #fff; border-radius: 16rpx; font-size: 27rpx;
 }
+.quick-time {
+  margin-left: 12rpx; height: 72rpx; line-height: 72rpx; padding: 0 16rpx;
+  background: var(--input-bg); border: 1rpx solid var(--border);
+  border-radius: 16rpx; font-size: 27rpx; color: var(--text); white-space: nowrap;
+}
+.quick-time.empty { color: var(--text-secondary); }
+.quick-before { display: flex; align-items: center; margin-top: 12rpx; }
+.quick-before-pill {
+  font-size: 22rpx; color: var(--primary); background: var(--primary-light);
+  border-radius: 10rpx; padding: 6rpx 14rpx;
+}
+.quick-before-tip { font-size: 20rpx; color: var(--text-secondary); margin-left: 12rpx; }
 
 /* ===== 任务行 ===== */
 .task-list { list-style: none; }
@@ -144,6 +156,7 @@
 }
 .tag.overdue { color: var(--overdue); background: var(--overdue-bg); }
 .tag.defer { color: var(--text-secondary); background: var(--input-bg); }
+.tag.time { color: #fff; background: var(--primary); }
 .more {
   width: 56rpx; height: 56rpx; line-height: 48rpx; text-align: center;
   font-size: 34rpx; color: var(--text-secondary); background: transparent; padding: 0;

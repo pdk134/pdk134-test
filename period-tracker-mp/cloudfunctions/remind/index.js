@@ -10,10 +10,10 @@ const TEMPLATE_ID = 'EPvaF7BUcvy5Pg5bseZBDJgtReOba0EMGvssnkkaoA8';
 const COLLECTION = 'tasks';
 const LOG_COLLECTION = 'remind_log';   // 每次运行的发送记录，排查问题时查这里
 const LOG_KEEP_DAYS = 90;             // 日志保留天数，更早的自动清理
-// 每天扫描的天数偏移：0 = 今天到期，1 = 明天到期。同一个人两类合并成一条通知。
+// 每天 8:00 扫描的天数偏移：0 = 今天到期，1 = 明天到期。只处理「没设具体时间」的任务。
 const REMIND_DAYS = [0, 1];
 const DAYS_BEFORE = 1;                 // 仅测试模式使用：测试文案里的目标日 = 明天
-const REMIND_HOUR = 8;                 // 提醒文案里显示的时间，与定时触发器保持一致
+const REMIND_HOUR = 8;                 // 每日汇总的整点；也是 time 字段缺时间时的兜底显示
 const PAGE = 'pages/list/list';       // 点通知打开清单页
 // 开发阶段先用 developer，未发布正式版时也能下发；小程序发布后改回 formal
 const MINIPROGRAM_STATE = 'developer';   // 开发版 developer / 体验版 trial / 正式版 formal
@@ -95,19 +95,31 @@ function fmtCNDate(iso) {
   var p = iso.split('-');
   return Number(p[0]) + '年' + Number(p[1]) + '月' + Number(p[2]) + '日';
 }
-/** 按字段类型决定日期值的格式：time 带时分、date 只要日期、thing 当短文本 */
-function dueValue(key, target) {
-  if (String(key).indexOf('time') === 0) return fmtCN(target, REMIND_HOUR);
+/** 按字段类型决定日期值的格式：time 带真实时分、date 只要日期、thing 当短文本 */
+function dueValue(key, target, timeHM) {
+  if (String(key).indexOf('time') === 0) {
+    if (timeHM) {
+      var d = target.split('-'), t = String(timeHM).split(':');
+      return Number(d[0]) + '年' + Number(d[1]) + '月' + Number(d[2]) + '日 ' + pad(t[0]) + ':' + pad(t[1]);
+    }
+    return fmtCN(target, REMIND_HOUR);
+  }
   if (String(key).indexOf('date') === 0) return fmtCNDate(target);
-  return clipThing(fmtCNDate(target));
+  return clipThing(fmtCNDate(target) + (timeHM ? ' ' + timeHM : ''));
 }
 
-/** 一次取出多天到期的待办（默认今天 + 明天） */
+/** 把北京时间 Date 转成 'YYYY-MM-DD HH:mm'，与客户端 remind_at 完全对齐 */
+function beijingMinute(d) {
+  d = d || beijingDate(0);
+  return fmtISO(d) + ' ' + pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes());
+}
+
+/** 一次取出多天到期的待办（默认今天 + 明天），只要没设具体时间的 */
 async function fetchDueTasks(targets) {
   var all = [], skip = 0;
   while (skip < 2000) {
     var r = await db.collection(COLLECTION)
-      .where({ due_date: _.in(targets), status: 'todo' })
+      .where({ due_date: _.in(targets), status: 'todo', due_time: _.in(['', null]) })
       .skip(skip).limit(100).get();
     var rows = r.data || [];
     all = all.concat(rows);
@@ -115,6 +127,31 @@ async function fetchDueTasks(targets) {
     skip += 100;
   }
   return all;
+}
+
+/** 取出 remind_at 正好等于当前分钟、且未删除的待办 */
+async function fetchAtTasks(minute) {
+  var all = [], skip = 0;
+  while (skip < 2000) {
+    var r = await db.collection(COLLECTION)
+      .where({ remind_at: minute, status: 'todo' })
+      .skip(skip).limit(100).get();
+    var rows = r.data || [];
+    all = all.concat(rows);
+    if (rows.length < 100) break;
+    skip += 100;
+  }
+  return all;
+}
+
+/** 同一分钟重试时不重复下发；日志集合不存在时返回 false，不阻断发送 */
+async function alreadySent(openid, minute) {
+  try {
+    var r = await db.collection(LOG_COLLECTION)
+      .where({ type: 'at', openid: openid, remindAt: minute })
+      .limit(1).get();
+    return (r.data || []).length > 0;
+  } catch (e) { return false; }
 }
 
 /** 通知正文：两天的件数合并成一句，thing 类型限 20 字，超出由 clipThing 截断 */
@@ -149,12 +186,19 @@ async function writeLog(doc) {
   }
 }
 
-/** 顺手清理过期日志；集合未建或为空时静默跳过 */
+/**
+ * 清理过期日志；集合未建或为空时静默跳过。
+ * 只在每天 8:00 的汇总里调用一次——触发器每分钟跑，跟着清会把删除请求放大 1440 倍。
+ * 返回删除条数，便于在 run 日志里观察。
+ */
 async function pruneLog() {
   try {
     var cutoff = Date.now() - LOG_KEEP_DAYS * 24 * 60 * 60 * 1000;
-    await db.collection(LOG_COLLECTION).where({ ts: _.lt(cutoff) }).remove();
-  } catch (e) { /* 忽略 */ }
+    var r = await db.collection(LOG_COLLECTION).where({ ts: _.lt(cutoff) }).remove();
+    var n = (r && r.stats && r.stats.removed) || 0;
+    if (n) console.log('[remind] 已清理过期日志', n, '条');
+    return n;
+  } catch (e) { return 0; }
 }
 
 function buildData(fields, values) {
@@ -165,12 +209,12 @@ function buildData(fields, values) {
   return data;
 }
 
-async function sendWithFallback(openid, target, baseValues) {
+async function sendWithFallback(openid, target, baseValues, timeHM) {
   var sets = await getFieldSets();
   var lastErr = null;
   for (var i = 0; i < sets.length; i++) {
     var fields = sets[i];
-    var values = Object.assign({}, baseValues, { due: dueValue(fields.due, target) });
+    var values = Object.assign({}, baseValues, { due: dueValue(fields.due, target, timeHM) });
     try {
       await cloud.openapi.subscribeMessage.send({
         touser: openid,
@@ -203,11 +247,11 @@ async function sendWithFallback(openid, target, baseValues) {
 }
 
 /**
- * 每天定时扫描「今天到期 + 明天到期」的待办，按 openid 汇总后各发一条订阅消息。
- * 两类合并成一条，既照顾当天要做的事，也不多发一条浪费订阅额度。
- * 一次性订阅：用户授权一次只能收一条，额度用完时微信会拒绝，不会重复打扰；
- * 因此不需要额外的去重集合。每次运行结果写入 remind_log 便于回溯。
- * 在云开发控制台传 { "dryRun": true } 可只扫描不发送，用于自检。
+ * 每分钟由定时触发器调用：
+ *   1) remind_at === 当前北京时间（精确到分钟）的任务，按 openid 合并后到点发一条；
+ *   2) 仅每天 8:00 对「没设具体时间」的任务做今天 + 明天汇总（原来的行为）。
+ * 一次性订阅：用户授权一次只能收一条，额度用完微信会拒发；同一分钟去重靠 remind_log。
+ * 在云开发控制台传 { "dryRun": true } 只扫描不发送；{ "forceDaily": true } 强制跑一次汇总。
  */
 exports.main = async (event) => {
   // 测试模式：从小程序端调用（带云调用上下文），直接给当前用户发一条，不依赖定时扫描
@@ -239,87 +283,160 @@ exports.main = async (event) => {
     };
   }
 
-  var today = fmtISO(beijingDate(0));
-  var tomorrow = fmtISO(beijingDate(1));
-  var targets = REMIND_DAYS.map(function (d) { return fmtISO(beijingDate(d)); });
-
+  var now = beijingDate(0);
+  var minute = beijingMinute(now);
+  var dry = !!(event && event.dryRun);
   var summary = {
-    today: today, tomorrow: tomorrow,
-    users: 0, tasks: 0, tasksToday: 0, tasksTomorrow: 0,
-    sent: 0, failed: [], logError: ''
+    minute: minute, dryRun: dry,
+    at: { users: 0, tasks: 0, sent: 0, failed: [] },
+    daily: null, pruned: 0, logError: ''
   };
 
-  var rows;
+  /* ---------- 1. 到点提醒（设了具体时间的任务） ---------- */
+  var atRows = [];
   try {
-    rows = await fetchDueTasks(targets);
+    atRows = await fetchAtTasks(minute);
   } catch (e) {
-    console.error('[remind] 查询失败', e);
-    summary.error = '查询任务失败：' + String(e && e.message);
-    summary.logError = await writeLog({ type: 'run', ok: false, error: summary.error, today: today, tomorrow: tomorrow });
-    return summary;
+    summary.at.error = '查询失败：' + String(e && e.message);
+    console.error('[remind] 到点任务查询失败', e);
   }
-
-  var groups = {};
-  rows.forEach(function (t) {
+  var atGroups = {};
+  atRows.forEach(function (t) {
     if (t.deleted_at) return;
     var oid = t._openid || t.openid;
     if (!oid) return;
-    if (!groups[oid]) groups[oid] = { today: [], tomorrow: [] };
-    var bucket = t.due_date === today ? 'today' : 'tomorrow';
-    groups[oid][bucket].push(t);
-    summary.tasks++;
-    if (bucket === 'today') summary.tasksToday++;
-    else summary.tasksTomorrow++;
+    if (!atGroups[oid]) atGroups[oid] = [];
+    atGroups[oid].push(t);
+    summary.at.tasks++;
   });
+  var atOpenids = Object.keys(atGroups);
+  summary.at.users = atOpenids.length;
 
-  var openids = Object.keys(groups);
-  summary.users = openids.length;
-  if (event && event.dryRun) return summary;
-
-  for (var i = 0; i < openids.length; i++) {
-    var oid = openids[i];
-    var g = groups[oid];
-    // 有今天的任务就用今天做主日期（标题取第一条），否则退到明天
-    var primary = g.today.length ? g.today : g.tomorrow;
-    var primaryDate = g.today.length ? today : tomorrow;
-    var values = {
-      title: clipThing(primary[0].title),
-      tip: clipThing(buildTip(g.today.length, g.tomorrow.length))
-    };
-    var r = await sendWithFallback(oid, primaryDate, values);
-    var reason = r.ok ? '' : hintReason(r.reason);
-    if (r.ok) {
-      summary.sent++;
-      console.log('[remind] 已发送', oid, JSON.stringify(r.fields));
-    } else {
-      summary.failed.push({ openid: oid, reason: reason });
-      console.warn('[remind] 未送达', oid, reason);
+  if (!dry) {
+    for (var a = 0; a < atOpenids.length; a++) {
+      var oidA = atOpenids[a];
+      if (await alreadySent(oidA, minute)) {
+        summary.at.failed.push({ openid: oidA, reason: '本分钟已发过，跳过重复提醒' });
+        continue;
+      }
+      var listA = atGroups[oidA];
+      var firstA = listA[0];
+      var timeA = String(firstA.due_time || '').slice(0, 5);
+      var valuesA = {
+        title: clipThing(firstA.title),
+        tip: clipThing(listA.length > 1 ? '有' + listA.length + '件事到点了' : '时间到了，开始吧')
+      };
+      var rA = await sendWithFallback(
+        oidA, String(firstA.due_date || '').slice(0, 10), valuesA, timeA
+      );
+      var reasonA = rA.ok ? '' : hintReason(rA.reason);
+      if (rA.ok) {
+        summary.at.sent++;
+        console.log('[remind] 到点提醒已发送', oidA, JSON.stringify(rA.fields));
+      } else {
+        summary.at.failed.push({ openid: oidA, reason: reasonA });
+        console.warn('[remind] 到点提醒未送达', oidA, reasonA);
+      }
+      summary.logError = await writeLog({
+        type: 'at', openid: oidA, remindAt: minute,
+        taskIds: listA.map(function (x) { return x.id || x._id; }),
+        target: firstA.due_date, time: timeA,
+        title: valuesA.title, tip: valuesA.tip,
+        ok: rA.ok, reason: reasonA, fields: rA.ok ? rA.fields : null
+      }) || summary.logError;
     }
-    summary.logError = await writeLog({
-      type: 'send',
-      openid: oid,
+  }
+
+  /* ---------- 2. 每天 8:00 汇总（没设具体时间的任务） ---------- */
+  var isDaily = now.getUTCHours() === REMIND_HOUR && now.getUTCMinutes() === 0;
+  if (event && event.forceDaily) isDaily = true;
+  if (isDaily) {
+    var today = fmtISO(beijingDate(0));
+    var tomorrow = fmtISO(beijingDate(1));
+    var targets = REMIND_DAYS.map(function (d) { return fmtISO(beijingDate(d)); });
+    var daily = {
       today: today, tomorrow: tomorrow,
-      todayCount: g.today.length,
-      tomorrowCount: g.tomorrow.length,
-      target: primaryDate,
-      title: primary[0].title,
-      tip: values.tip,
-      ok: r.ok,
-      reason: reason,
-      fields: r.ok ? r.fields : null
+      users: 0, tasks: 0, tasksToday: 0, tasksTomorrow: 0,
+      sent: 0, failed: []
+    };
+    summary.daily = daily;
+
+    var rows = [];
+    try {
+      rows = await fetchDueTasks(targets);
+    } catch (e) {
+      console.error('[remind] 汇总任务查询失败', e);
+      daily.error = '查询任务失败：' + String(e && e.message);
+      rows = [];
+    }
+    var groups = {};
+    rows.forEach(function (t) {
+      if (t.deleted_at || t.due_time) return;
+      var oid = t._openid || t.openid;
+      if (!oid) return;
+      if (!groups[oid]) groups[oid] = { today: [], tomorrow: [] };
+      var bucket = t.due_date === today ? 'today' : 'tomorrow';
+      groups[oid][bucket].push(t);
+      daily.tasks++;
+      if (bucket === 'today') daily.tasksToday++;
+      else daily.tasksTomorrow++;
+    });
+    var openids = Object.keys(groups);
+    daily.users = openids.length;
+
+    if (!dry) {
+      for (var i = 0; i < openids.length; i++) {
+        var oid = openids[i];
+        var g = groups[oid];
+        // 有今天的任务就用今天做主日期（标题取第一条），否则退到明天
+        var primary = g.today.length ? g.today : g.tomorrow;
+        var primaryDate = g.today.length ? today : tomorrow;
+        var values = {
+          title: clipThing(primary[0].title),
+          tip: clipThing(buildTip(g.today.length, g.tomorrow.length))
+        };
+        var r = await sendWithFallback(oid, primaryDate, values, '');
+        var reason = r.ok ? '' : hintReason(r.reason);
+        if (r.ok) {
+          daily.sent++;
+          console.log('[remind] 汇总已发送', oid, JSON.stringify(r.fields));
+        } else {
+          daily.failed.push({ openid: oid, reason: reason });
+          console.warn('[remind] 汇总未送达', oid, reason);
+        }
+        summary.logError = await writeLog({
+          type: 'send',
+          openid: oid,
+          today: today, tomorrow: tomorrow,
+          todayCount: g.today.length,
+          tomorrowCount: g.tomorrow.length,
+          target: primaryDate,
+          title: primary[0].title,
+          tip: values.tip,
+          ok: r.ok,
+          reason: reason,
+          fields: r.ok ? r.fields : null
+        }) || summary.logError;
+      }
+    }
+
+    // 维护动作一天一次就够：清理过期日志固定跟着 8:00 这趟汇总跑，dryRun 时不动数据
+    if (!dry) summary.pruned = await pruneLog();
+  }
+
+  // 每分钟都写 run 日志会产生大量无用数据，只在有动作或跑了汇总时记一条；dryRun 不留痕
+  if (!dry && (summary.at.sent || summary.at.failed.length || summary.daily)) {
+    summary.logError = await writeLog({
+      type: 'run', ok: true, minute: minute,
+      atTasks: summary.at.tasks, atSent: summary.at.sent,
+      pruned: summary.pruned || 0,
+      daily: summary.daily ? {
+        tasks: summary.daily.tasks, users: summary.daily.users,
+        sent: summary.daily.sent, failedCount: summary.daily.failed.length
+      } : null
     }) || summary.logError;
   }
 
-  summary.logError = await writeLog({
-    type: 'run',
-    ok: true,
-    today: today, tomorrow: tomorrow,
-    users: summary.users, tasks: summary.tasks,
-    tasksToday: summary.tasksToday, tasksTomorrow: summary.tasksTomorrow,
-    sent: summary.sent, failedCount: summary.failed.length
-  }) || summary.logError;
-
-  await pruneLog();
   console.log('[remind] 汇总', JSON.stringify(summary));
   return summary;
 };

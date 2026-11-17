@@ -22,6 +22,13 @@ function vm(t) {
   }
   if (t.defer_count > 0) bits.push('推迟' + t.defer_count + '次');
   if (bits.length) tags.push({ text: bits.join(' · '), type: 'defer' });
+  if (t.due_time) {
+    var label = t.due_time;
+    if (t.remind_before > 0) {
+      label += ' · 提前' + (t.remind_before >= 60 ? (t.remind_before / 60) + '小时' : t.remind_before + '分钟');
+    }
+    tags.push({ text: label, type: 'time' });
+  }
   if (t.due_date !== today && t.status === 'todo') {
     tags.push({ text: fmtCN(t.due_date), type: 'due' });
   }
@@ -245,8 +252,9 @@ function createHandlers() {
     onEditorConfirm: function (e) {
       var d = e.detail || {};
       var id = this.data.editorId;
-      if (id) Store.patch(id, { title: d.title, note: d.note, due: d.due });
-      else Store.create({ title: d.title, note: d.note, due: d.due });
+      var fields = { title: d.title, note: d.note, due: d.due, time: d.time || '', before: d.before || 0 };
+      if (id) Store.patch(id, fields);
+      else Store.create(fields);
       this.setData({ editorVisible: false, editorId: '', editorTask: null });
       wx.showToast({ title: id ? '已保存' : '已添加', icon: 'none', duration: 1200 });
       change(this);
