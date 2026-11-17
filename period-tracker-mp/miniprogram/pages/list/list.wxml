@@ -20,7 +20,7 @@
       </view>
       <view class="task-list">
         <block wx:for="{{group.tasks}}" wx:key="id">
-          <template is="swipeTaskRow" data="{{...item, deferForId: deferForId, deferDays: deferDays, editingId: editingId, editingText: editingText}}" />
+          <template is="swipeTaskRow" data="{{...item, deferForId: deferForId, deferDays: deferDays}}" />
         </block>
       </view>
       <view wx:if="{{group.collapsed}}" class="expand-btn" bindtap="expandDone">

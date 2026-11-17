@@ -47,31 +47,6 @@ function change(ctx) {
   if (ctx && typeof ctx.refresh === 'function') ctx.refresh();
 }
 
-/* ---------------- 行内改标题（不弹表单） ---------------- */
-function beginInline(ctx, id) {
-  var t = Store.get(id);
-  if (!t || ctx.data.editingId === id) return;
-  ctx.setData({ editingId: id, editingText: t.title });
-}
-function endInline(ctx) {
-  if (!ctx.data.editingId && !ctx.data.editingText) return;
-  ctx.setData({ editingId: '', editingText: '' });
-}
-/** 保存行内编辑。先清空 editingId，confirm 与 blur 先后触发也只写一次 */
-function commitInline(ctx) {
-  var id = ctx.data.editingId;
-  if (!id) return;
-  var t = Store.get(id);
-  var next = String(ctx.data.editingText || '').trim();
-  endInline(ctx);
-  if (!t) return;
-  if (!next) { wx.showToast({ title: '标题不能为空', icon: 'none' }); return; }
-  if (next === t.title) return;
-  Store.patch(id, { title: next });
-  wx.showToast({ title: '已修改', icon: 'none', duration: 1000 });
-  change(ctx);
-}
-
 /* ---------------- 左滑任务行（日历页 / 清单页） ---------------- */
 var SWIPE_WIDTH_RPX = 390;   // 三个操作按钮，各 130rpx
 
@@ -102,7 +77,6 @@ function closeRow(ctx, path) {
 function createHandlers() {
   return {
     onSwipeStart: function (e) {
-      if (this.data.editingId) return;   // 行内编辑中不响应滑动
       var ds = e.currentTarget.dataset, t = e.touches[0];
       var s = this._swipe || (this._swipe = {});
       s.path = ds.path;
@@ -155,16 +129,14 @@ function createHandlers() {
       s.path = '';
     },
 
-    /** 点行：编辑中先落存并退出；否则已展开则收起 */
+    /** 点行：已展开则收起，不打开任务详情/编辑 */
     onSwipeTap: function (e) {
-      if (this.data.editingId) { commitInline(this); return; }
       if (this._swipeTapBlocked) { this._swipeTapBlocked = false; return; }
       var ds = e.currentTarget.dataset;
       if (Number(ds.x) < -5) closeRow(this, ds.path);
     },
 
     onCheck: function (e) {
-      if (this.data.editingId) commitInline(this);   // 勾选前先把改了一半的标题存下
       var id = e.currentTarget.dataset.id;
       var t = Store.get(id);
       if (!t) return;
@@ -176,20 +148,13 @@ function createHandlers() {
       Remind.ensureAuth();
     },
 
-    /** 左滑 → 编辑：收起行，原文字就地变成输入框 */
+    /** 左滑 → 编辑：收起行，把任务回填到页面下方的快速输入框（即新建时的状态） */
     onSwipeEdit: function (e) {
       var ds = e.currentTarget.dataset;
       if (!Store.get(ds.id)) return;
       closeRow(this, ds.path);
-      beginInline(this, ds.id);
+      this.startQuickEdit(ds.id);
     },
-
-    onEditInput: function (e) {
-      this.setData({ editingText: e.detail.value });
-    },
-    onEditConfirm: function () { commitInline(this); },
-    onEditBlur: function () { commitInline(this); },
-    onEditCancel: function () { endInline(this); },
 
     onSwipeDefer: function (e) {
       var ds = e.currentTarget.dataset;
@@ -261,7 +226,7 @@ function createHandlers() {
             wx.showToast({ title: '已推迟 ' + n + ' 天', icon: 'none', duration: 1200 });
             change(self);
           } else if (i === 4) {
-            self.openEditor(id);
+            self.startQuickEdit(id);
           } else if (i === 5) {
             wx.showModal({
               title: '删除任务', content: '确定删除「' + t.title + '」？',
@@ -278,10 +243,8 @@ function createHandlers() {
       });
     },
 
-    /* 有 id → 行内改标题；无 id → 弹窗新建（新建仍需要日期/时间/提醒） */
-    openEditor: function (id) {
-      var t = id ? Store.get(id) : null;
-      if (t) { beginInline(this, id); return; }
+    /* 弹窗仅用于新建：新建需要日期/时间/提醒，编辑直接回填页面的快速输入框 */
+    openEditor: function () {
       this.setData({
         editorVisible: true,
         editorTask: null,
@@ -293,7 +256,7 @@ function createHandlers() {
       this.setData({ editorVisible: false, editorTask: null });
     },
 
-    /** 弹窗只用于新建；编辑走行内，不经过这里 */
+    /** 弹窗只用于新建；编辑回填页面的快速输入框，不经过这里 */
     onEditorConfirm: function (e) {
       var d = e.detail || {};
       Store.create({ title: d.title, note: d.note, due: d.due, time: d.time || '', before: d.before || 0 });

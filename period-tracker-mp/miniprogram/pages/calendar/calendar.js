@@ -22,7 +22,7 @@ Page(Object.assign({
     swipeOpenPath: '',
     deferForId: '', deferDays: 1,
     editorVisible: false, editorTask: null, editorDate: '',
-    editingId: '', editingText: ''
+    quickEditingId: ''
   },
 
   onLoad: function () {
@@ -38,6 +38,13 @@ Page(Object.assign({
     if (Cloud.state().cloudReady) Cloud.pull(true);
     this.setData({ deferForId: '', deferDays: 1 });
     this.refresh();
+    // 清单页点「编辑」会先把任务 id 放这里，切回来后直接回填输入框
+    var app = getApp();
+    if (app.globalData.pendingEditId) {
+      var id = app.globalData.pendingEditId;
+      app.globalData.pendingEditId = '';
+      this.startQuickEdit(id);
+    }
   },
 
   refresh: function () {
@@ -101,13 +108,13 @@ Page(Object.assign({
         v.path = 'dayTasks[' + i + '].x';
         return v;
       }),
-      swipeOpenPath: '',
-      editingId: '', editingText: ''
+      swipeOpenPath: ''
     });
   },
 
   /* 跳到某年某月：选中日若不在目标月，自动落到该月（本月取今天，其它月取 1 号） */
   jumpMonth: function (y, m) {
+    if (this.data.quickEditingId) this.cancelQuickEdit();   // 换日子了就退出编辑，免得分不清要改哪条
     var sel = Store.parseDate(this.data.selectedDate);
     var same = (sel.getFullYear() === y && sel.getMonth() === m - 1);
     if (!same) {
@@ -140,6 +147,7 @@ Page(Object.assign({
   },
   selectDate: function (e) {
     var s = e.currentTarget.dataset.date;
+    if (this.data.quickEditingId) this.cancelQuickEdit();
     this.setData({ selectedDate: s });
     this.renderCalendar(this.data.viewYear, this.data.viewMonth, s);
     this.renderDay(s);
@@ -148,17 +156,49 @@ Page(Object.assign({
   onQuickInput: function (e) { this.setData({ quickValue: e.detail.value }); },
   onQuickTime: function (e) { this.setData({ quickTime: e.detail.value }); },
   onQuickBefore: function (e) { this.setData({ beforeIndex: Number(e.detail.value) || 0 }); },
+
+  /* 编辑：把任务回填到下方的快速输入框，等于回到它新建时的最后状态 */
+  startQuickEdit: function (id) {
+    var t = Store.get(id);
+    if (!t) return;
+    if (t.due_date !== this.data.selectedDate) {
+      var d = Store.parseDate(t.due_date);
+      this.setData({ selectedDate: t.due_date });
+      this.renderCalendar(d.getFullYear(), d.getMonth() + 1, t.due_date);
+      this.renderDay(t.due_date);
+    }
+    var vals = this.data.beforeValues;
+    var idx = vals.indexOf(Number(t.remind_before) || 0);
+    this.setData({
+      quickEditingId: t.id,
+      quickValue: t.title,
+      quickTime: t.due_time || '',
+      beforeIndex: idx < 0 ? 0 : idx
+    });
+    wx.pageScrollTo({ selector: '.quick-add', duration: 250, fail: function () {} });
+  },
+
+  cancelQuickEdit: function () {
+    this.setData({ quickEditingId: '', quickValue: '', quickTime: '', beforeIndex: 0 });
+  },
+
+  /* ＋ / 回车：编辑态保存回原任务，否则新建 */
   quickAdd: function () {
     var v = (this.data.quickValue || '').trim();
     if (!v) return;
     var tm = this.data.quickTime;
-    Store.create({
-      title: v, due: this.data.selectedDate,
-      time: tm,
-      before: this.data.beforeValues[this.data.beforeIndex] || 0
+    var before = this.data.beforeValues[this.data.beforeIndex] || 0;
+    var id = this.data.quickEditingId;
+    if (id) {
+      Store.patch(id, { title: v, due: this.data.selectedDate, time: tm, before: before });
+    } else {
+      Store.create({ title: v, due: this.data.selectedDate, time: tm, before: before });
+    }
+    this.setData({ quickValue: '', quickTime: '', beforeIndex: 0, quickEditingId: '' });
+    wx.showToast({
+      title: id ? '已保存' : (tm ? '已添加，将按时提醒' : '已添加'),
+      icon: 'none', duration: 1200
     });
-    this.setData({ quickValue: '', quickTime: '', beforeIndex: 0 });
-    wx.showToast({ title: tm ? '已添加，将按时提醒' : '已添加', icon: 'none', duration: 1200 });
     Actions.change(this);
     if (this.data.selectedDate >= Store.todayStr()) Remind.ensureAuth();
   }

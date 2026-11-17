@@ -36,17 +36,22 @@
     </view>
     <view class="task-list">
       <block wx:for="{{dayTasks}}" wx:key="id">
-        <template is="swipeTaskRow" data="{{...item, deferForId: deferForId, deferDays: deferDays, editingId: editingId, editingText: editingText}}" />
+        <template is="swipeTaskRow" data="{{...item, deferForId: deferForId, deferDays: deferDays}}" />
       </block>
       <view wx:if="{{dayTasks.length === 0}}" class="empty-hint">这一天还没有任务</view>
     </view>
-    <view class="quick-add">
-      <input class="quick-input" value="{{quickValue}}" placeholder="添加这一天的待办，回车/点＋"
+    <view class="quick-add {{quickEditingId ? 'editing' : ''}}">
+      <input class="quick-input" value="{{quickValue}}"
+             placeholder="{{quickEditingId ? '改完点 ✓ 保存' : '添加这一天的待办，回车/点＋'}}"
              confirm-type="done" bindinput="onQuickInput" bindconfirm="quickAdd" />
       <picker mode="time" value="{{quickTime || '09:00'}}" bindchange="onQuickTime">
         <view class="quick-time {{quickTime ? '' : 'empty'}}">{{quickTime || '设时间'}}</view>
       </picker>
-      <view class="add-btn" bindtap="quickAdd">＋</view>
+      <view class="add-btn" bindtap="quickAdd">{{quickEditingId ? '✓' : '＋'}}</view>
+    </view>
+    <view wx:if="{{quickEditingId}}" class="quick-editing">
+      <text class="quick-editing-tip">正在编辑这条任务，改完点 ✓ 保存</text>
+      <text class="quick-editing-cancel" bindtap="cancelQuickEdit">取消编辑</text>
     </view>
     <view wx:if="{{quickTime}}" class="quick-before">
       <picker range="{{beforeLabels}}" value="{{beforeIndex}}" bindchange="onQuickBefore">

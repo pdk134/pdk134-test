@@ -40,12 +40,7 @@
         <view class="task-row {{cls}}">
           <view class="check" data-id="{{id}}" catchtap="onCheck">{{checked ? '✓' : ''}}</view>
           <view class="task-main">
-            <input wx:if="{{editingId === id}}" class="task-title-input"
-                   value="{{editingText}}" focus="{{editingId === id}}" maxlength="200"
-                   confirm-type="done" cursor-spacing="40" adjust-position="{{true}}"
-                   bindinput="onEditInput" bindconfirm="onEditConfirm" bindblur="onEditBlur"
-                   catchtap="noop" />
-            <text wx:else class="task-title">{{title}}</text>
+            <text class="task-title">{{title}}</text>
             <view class="task-tags" wx:if="{{tags.length > 0}}">
               <text wx:for="{{tags}}" wx:for-item="tag" wx:key="text" class="tag {{tag.type}}">{{tag.text}}</text>
             </view>
