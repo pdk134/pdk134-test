@@ -131,6 +131,23 @@
 }
 .quick-before-tip { font-size: 20rpx; color: var(--text-secondary); margin-left: 12rpx; }
 
+/* 编辑态：输入框描主色，＋ 变 ✓，下方多一条「正在编辑 / 取消」 */
+.quick-add.editing .quick-input { border-color: var(--primary); background: var(--card); }
+.quick-add.editing .quick-time { border-color: var(--primary); }
+.quick-add.editing .add-btn { background: var(--primary-dark); font-weight: 600; }
+.quick-editing {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 10rpx; padding: 0 4rpx;
+}
+.quick-editing-tip {
+  flex: 1; min-width: 0; font-size: 21rpx; color: var(--primary);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.quick-editing-cancel {
+  flex: none; margin-left: 12rpx; font-size: 21rpx;
+  color: var(--text-secondary); padding: 4rpx 10rpx;
+}
+
 /* ===== 任务行 ===== */
 .task-list { list-style: none; }
 .task-row {
@@ -147,13 +164,6 @@
 .task-row.done .check { background: var(--primary); }
 .task-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .task-title { font-size: 28rpx; word-break: break-all; }
-/* 行内改标题：视觉与原文字接近，只多一圈主色描边 */
-.task-title-input {
-  width: 100%; box-sizing: border-box; height: 56rpx;
-  font-size: 28rpx; color: var(--text);
-  background: var(--input-bg); border: 1rpx solid var(--primary);
-  border-radius: 8rpx; padding: 0 12rpx;
-}
 .task-row.done .task-title { text-decoration: line-through; color: var(--text-secondary); }
 .task-row.overdue .task-title { color: var(--overdue); }
 .task-tags { display: flex; flex-wrap: wrap; margin-top: 6rpx; }

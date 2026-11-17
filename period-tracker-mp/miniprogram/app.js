@@ -5,7 +5,8 @@ App({
     cloudReady: false,
     cloudError: '',
     openid: '',
-    theme: 'light'
+    theme: 'light',
+    pendingEditId: ''   // 清单页点编辑 → 切到日历页后要回填的任务
   },
 
   onLaunch: function () {

@@ -17,8 +17,7 @@ Page(Object.assign({
     statTodo: 0, statDone: 0, statRate: '–', headerSub: '',
     groups: [], doneCollapsed: true,
     swipeOpenPath: '', deferForId: '', deferDays: 1,
-    editorVisible: false, editorTask: null, editorDate: '', selectedDate: '',
-    editingId: '', editingText: ''
+    editorVisible: false, editorTask: null, editorDate: '', selectedDate: ''
   },
 
   onLoad: function () {
@@ -83,9 +82,15 @@ Page(Object.assign({
         : '今天没有安排，享受吧 ✨',
       groups: groups,
       swipeOpenPath: '',
-      selectedDate: today,
-      editingId: '', editingText: ''
+      selectedDate: today
     });
+  },
+
+  /* 清单页没有快速输入框：记下任务 id，切到日历页后由它回填到新建输入框 */
+  startQuickEdit: function (id) {
+    if (!Store.get(id)) return;
+    getApp().globalData.pendingEditId = id;
+    wx.switchTab({ url: '/pages/calendar/calendar' });
   },
 
   toggleGroup: function (e) {
