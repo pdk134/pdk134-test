@@ -1,0 +1,50 @@
+# LLaMA-Factory LoRA-SFT 配置（基线 v1）
+# 运行： python train/train.py --backend llamafactory --name v1
+# 三组对比实验只改下面标注的 [实验变量]，其余保持一致。
+### model
+model_name_or_path: Qwen/Qwen2.5-7B-Instruct
+trust_remote_code: true
+
+### method
+stage: sft
+do_train: true
+finetuning_type: lora
+lora_rank: 16              # [实验变量] v3 改成 8
+lora_alpha: 32
+lora_dropout: 0.05
+lora_target: q_proj,v_proj
+
+### dataset
+dataset: warehouse_sft
+dataset_dir: train
+template: qwen
+cutoff_len: 2048
+max_samples: 100000
+overwrite_cache: true
+preprocessing_num_workers: 4
+train_on_prompt: false      # 关键：instruction/input 被 mask，只对 output(SQL) 算 loss
+
+### output
+output_dir: outputs/lora-v1  # [实验变量] 每组实验换目录
+logging_steps: 10
+save_steps: 200
+plot_loss: true
+overwrite_output_dir: true
+save_total_limit: 2
+report_to: none
+
+### train
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 16
+learning_rate: 1.0e-4       # [实验变量]
+num_train_epochs: 3.0       # [实验变量]
+lr_scheduler_type: cosine
+warmup_ratio: 0.03
+bf16: true
+gradient_checkpointing: true
+ddp_timeout: 180000000
+
+### eval
+# 不使用内置验证集：eval.jsonl 已冻结且由 eval/run_eval.py 独立执行，
+# 避免任何形式的评测集泄漏。
+val_size: 0.0

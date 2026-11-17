@@ -1,0 +1,48 @@
+<view class="page theme-{{theme}}">
+
+  <!-- 搜索框 -->
+  <view class="search">
+    <view class="search-box">
+      <text class="search-ic">⌕</text>
+      <input class="search-input" placeholder="搜索术语 / 英文 / 日文 / 释义"
+             value="{{q}}" confirm-type="search"
+             bindinput="onSearch" bindconfirm="onSearch"/>
+      <text class="search-clear" wx:if="{{q}}" bindtap="onClearQ">✕</text>
+    </view>
+  </view>
+
+  <!-- 分类横滑 -->
+  <scroll-view class="cats" scroll-x enhanced show-scrollbar="{{false}}">
+    <view class="cat-row">
+      <view class="cat {{cat === item.key ? 'on' : ''}}"
+            wx:for="{{cats}}" wx:key="key"
+            data-k="{{item.key}}" bindtap="onCat">{{item.name}}</view>
+    </view>
+  </scroll-view>
+
+  <!-- 状态筛选 -->
+  <view class="statuses">
+    <view class="st {{status === item.key ? 'on' : ''}}"
+          wx:for="{{statuses}}" wx:key="key"
+          data-k="{{item.key}}" bindtap="onStatus">{{item.name}}</view>
+  </view>
+
+  <view class="count">共 {{count}} 条</view>
+
+  <!-- 术语列表 -->
+  <view class="list">
+    <view class="lib-item" wx:for="{{list}}" wx:key="id"
+          data-id="{{item.id}}" bindtap="onItemTap">
+      <view class="lib-top">
+        <text class="lib-term">{{item.t}}</text>
+        <text class="badge {{item.cls}}">{{item.badge}}</text>
+      </view>
+      <view class="lib-en" wx:if="{{item.en || item.ja}}">{{item.en}}{{item.ja ? '　·　' + item.ja : ''}}</view>
+      <view class="lib-def">{{item.d}}</view>
+    </view>
+    <view class="muted empty" wx:if="{{list.length === 0}}">没有匹配的术语</view>
+  </view>
+
+  <term-detail visible="{{modal.visible}}" term="{{modal.term}}"
+               bind:close="onModalClose" bind:goto="onModalGoto"/>
+</view>

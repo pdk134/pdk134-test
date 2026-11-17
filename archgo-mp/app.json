@@ -1,0 +1,37 @@
+{
+  "pages": [
+    "pages/learn/learn",
+    "pages/library/library",
+    "pages/quiz/quiz",
+    "pages/stats/stats",
+    "pages/settings/settings",
+    "pages/account/account"
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#0e1117",
+    "navigationBarTextStyle": "white",
+    "navigationBarTitleText": "架构术语学习通",
+    "backgroundColor": "#0e1117",
+    "backgroundTextStyle": "dark"
+  },
+  "tabBar": {
+    "color": "#93a1b5",
+    "selectedColor": "#5b8cff",
+    "backgroundColor": "#151a23",
+    "borderStyle": "black",
+    "list": [
+      { "pagePath": "pages/learn/learn", "text": "学习",
+        "iconPath": "images/icons/tab_learn.png", "selectedIconPath": "images/icons/tab_learn_on.png" },
+      { "pagePath": "pages/library/library", "text": "词库",
+        "iconPath": "images/icons/tab_library.png", "selectedIconPath": "images/icons/tab_library_on.png" },
+      { "pagePath": "pages/quiz/quiz", "text": "自测",
+        "iconPath": "images/icons/tab_quiz.png", "selectedIconPath": "images/icons/tab_quiz_on.png" },
+      { "pagePath": "pages/stats/stats", "text": "统计",
+        "iconPath": "images/icons/tab_stats.png", "selectedIconPath": "images/icons/tab_stats_on.png" },
+      { "pagePath": "pages/settings/settings", "text": "设置",
+        "iconPath": "images/icons/tab_settings.png", "selectedIconPath": "images/icons/tab_settings_on.png" }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>架构术语学习通</title>
+
+<!-- PWA -->
+<meta name="theme-color" content="#0e1117" id="metaTheme">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="术语学习">
+<meta name="format-detection" content="telephone=no, email=no, address=no">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%235b8cff'/><text x='50' y='70' font-size='58' text-anchor='middle' fill='white' font-family='sans-serif'>架</text></svg>">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<!-- 登录门禁：未登录时盖住整个应用。表单由 app.js 从账号页搬进来（共用同一份节点，不重复实现） -->
+<div class="gate hidden" id="gate">
+  <div class="gate-card">
+    <div class="gate-logo">架</div>
+    <h2 class="gate-title">架构术语学习通</h2>
+    <p class="gate-sub" id="gateSub"><span class="spin"></span>正在检查登录状态…</p>
+    <div class="gate-env hidden" id="gateEnv"></div>
+    <div class="gate-form" id="gateForm"></div>
+    <button class="btn ghost block hidden" id="gateRetry">重新加载</button>
+    <p class="gate-foot">登录后学习进度在手机与电脑之间自动同步</p>
+  </div>
+</div>
+
+<div class="app">
+
+  <!-- 环境标识：仅开发构建才渲染。生产构建由流水线写入 prod，此元素永不出现 -->
+  <div class="env-badge hidden" id="envBadge"></div>
+
+  <!-- 顶部 App 栏 -->
+  <header class="appbar">
+    <div class="appbar-left">
+      <div class="logo">架</div>
+      <div class="appbar-text">
+        <h1 id="pageTitle">今日学习</h1>
+        <p id="pageSub">按间隔重复安排复习</p>
+      </div>
+    </div>
+    <div class="appbar-right">
+      <div class="appbar-stat" id="appbarStat">
+        <span>新 <b id="sideNew">0</b></span>
+        <span>复 <b id="sideRev">0</b></span>
+        <span>连 <b id="sideStreak">0</b></span>
+      </div>
+      <button class="icon-btn" id="themeBtn" title="切换主题" aria-label="切换主题">☾</button>
+    </div>
+  </header>
+
+  <!-- 考前倒计时横幅（常驻，所有页面可见） -->
+  <div class="countdown-bar" id="countdownBar">
+    <div class="cd-left">
+      <div class="cd-label">距软考 · 系统架构设计师</div>
+      <div class="cd-main"><b id="cdDays">--</b><span class="cd-unit" id="cdUnit">天</span></div>
+    </div>
+    <div class="cd-right">
+      <div class="cd-time" id="cdTime"></div>
+      <div class="cd-date">10月24日 09:00 开考</div>
+    </div>
+  </div>
+
+  <!-- 主区 -->
+  <main class="main">
+
+    <!-- 学习 -->
+    <section class="view active" id="view-learn">
+      <div class="session">
+        <div class="progress-line">
+          <div class="bar"><i id="learnBar"></i></div>
+          <span class="counter" id="learnCounter">0 / 0</span>
+        </div>
+        <div class="chips" id="learnChips"></div>
+      </div>
+
+      <div class="flashcard-wrap">
+        <div class="flashcard" id="flashcard">
+          <div class="fc-inner">
+            <div class="fc-face fc-front">
+              <div class="fc-tags"><span class="tag" id="fCat"></span><span class="tag lv" id="fLv"></span></div>
+              <div class="fc-term" id="fTerm"></div>
+              <div class="fc-en" id="fEn"></div>
+              <div class="fc-ja" id="fJa"></div>
+              <div class="fc-hint">轻触卡片查看释义 · 左右滑动可翻卡</div>
+            </div>
+            <div class="fc-face fc-back">
+              <div class="fc-term-sm" id="bTerm"></div>
+              <div class="fc-ja" id="bJa"></div>
+              <div class="fc-def" id="bDef"></div>
+              <ul class="fc-points" id="bPoints"></ul>
+              <div class="fc-eg"><span>场景</span><p id="bEg"></p></div>
+              <div class="fc-rel"><span>相关</span><div id="bRel"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="empty hidden" id="learnEmpty">
+          <div class="empty-emoji">✦</div>
+          <h3 id="emptyTitle">今天的任务完成了</h3>
+          <p id="emptyText">可以先去词库预习，或把每日新词数调高一点。</p>
+          <button class="btn primary" id="btnExtra">再来 10 张</button>
+        </div>
+
+        <div class="summary hidden" id="summary">
+          <h3>本次学习完成</h3>
+          <div class="sum-grid">
+            <div><b id="sumTotal">0</b><span>总卡片</span></div>
+            <div><b id="sumNew">0</b><span>新学</span></div>
+            <div><b id="sumOk">0</b><span>认识</span></div>
+            <div><b id="sumAcc">0%</b><span>正确率</span></div>
+          </div>
+          <div class="sum-actions">
+            <button class="btn primary" id="btnMore">继续学习</button>
+            <button class="btn ghost" data-view="library">去词库看看</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="controls" id="controls">
+        <button class="btn ghost" id="btnSpeak">🔊 朗读</button>
+        <button class="btn ghost" id="btnFlip">翻卡</button>
+        <button class="btn ghost" id="btnBgm">♪ BGM</button>
+      </div>
+
+      <div class="rate disabled" id="rateBar">
+        <button class="btn bad" data-r="0">不认识</button>
+        <button class="btn warn" data-r="1">模糊</button>
+        <button class="btn good" data-r="2">认识</button>
+      </div>
+    </section>
+
+    <!-- 词库 -->
+    <section class="view" id="view-library">
+      <div class="toolbar">
+        <input type="search" id="libSearch" placeholder="搜索术语 / 英文 / 释义…">
+        <select id="libStatus">
+          <option value="all">全部状态</option>
+          <option value="new">未学习</option>
+          <option value="learning">学习中</option>
+          <option value="mastered">已掌握</option>
+        </select>
+      </div>
+      <div class="chips" id="libCats"></div>
+      <div class="lib-list" id="libList"></div>
+    </section>
+
+    <!-- 测试 -->
+    <section class="view" id="view-quiz">
+
+      
+      
+      <div id="quizTerm">
+        <div class="panel" id="quizStart">
+          <h3>选择题测试</h3>
+          <p class="muted">从词库中随机抽题，术语 ↔ 释义 双向考察，答错自动进入难词本。</p>
+          <div class="form-row">
+            <label>题量</label>
+            <select id="quizCount">
+              <option value="5">5 题</option>
+              <option value="10" selected>10 题</option>
+              <option value="20">20 题</option>
+            </select>
+          </div>
+          <button class="btn primary block" id="btnQuizStart">开始测试</button>
+        </div>
+
+        <div class="panel hidden" id="quizPlay">
+          <div class="progress-line">
+            <div class="bar"><i id="quizBar"></i></div>
+            <span class="counter" id="quizCounter">0 / 0</span>
+            <button class="exit-btn" id="btnQuizExit" title="退出测试">✕ 退出</button>
+          </div>
+          <div class="quiz-q" id="quizQ"></div>
+          <div class="quiz-tip" id="quizTip"></div>
+          <div class="quiz-options" id="quizOptions"></div>
+          <div class="quiz-feedback hidden" id="quizFeedback"></div>
+          <button class="btn primary block hidden" id="btnQuizNext">下一题</button>
+        </div>
+
+        <div class="panel hidden" id="quizResult">
+          <h3 id="quizScore">测试完成</h3>
+          <div class="sum-grid">
+            <div><b id="qTotal">0</b><span>题目</span></div>
+            <div><b id="qRight">0</b><span>答对</span></div>
+            <div><b id="qAcc">0%</b><span>正确率</span></div>
+            <div><b id="qWrong">0</b><span>进难词本</span></div>
+          </div>
+          <div class="sum-actions">
+            <button class="btn primary" id="btnQuizAgain">再来一组</button>
+            <button class="btn ghost" data-view="library">查看词库</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 案例题（下午一） -->
+      
+      <!-- 论文题（下午二） -->
+          </section>
+
+    <!-- 考点 -->
+    
+    <!-- 统计 -->
+    <section class="view" id="view-stats">
+      <div class="stat-grid">
+        <div class="stat"><b id="stTotal">0</b><span>词库总量</span></div>
+        <div class="stat"><b id="stLearned">0</b><span>已学习</span></div>
+        <div class="stat"><b id="stMastered">0</b><span>已掌握</span></div>
+        <div class="stat"><b id="stDue">0</b><span>待复习</span></div>
+      </div>
+
+      <div class="panel-row">
+        <div class="panel">
+          <h3>掌握分布</h3>
+          <div class="donut-box">
+            <svg viewBox="0 0 120 120" class="donut">
+              <circle class="donut-bg" cx="60" cy="60" r="52"></circle>
+              <circle class="donut-fg" cx="60" cy="60" r="52" id="donutFg"></circle>
+            </svg>
+            <div class="donut-center"><b id="donutPct">0%</b><span>已掌握</span></div>
+          </div>
+          <div class="legend" id="legend"></div>
+        </div>
+
+        <div class="panel">
+          <h3>近 7 日学习量</h3>
+          <div class="bars" id="bars"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>分类掌握进度</h3>
+        <div class="cat-progress" id="catProgress"></div>
+      </div>
+
+      <div class="panel">
+        <h3>难词本</h3>
+        <div class="lib-list" id="hardList"></div>
+      </div>
+
+    </section>
+
+    <!-- 设置 -->
+    <section class="view" id="view-settings">
+      <div class="panel">
+        <h3>学习计划</h3>
+        <div class="form-row">
+          <label>每日新词</label>
+          <select id="setNew">
+            <option value="5">5</option><option value="10" selected>10</option>
+            <option value="20">20</option><option value="30">30</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>每日复习上限</label>
+          <select id="setRev">
+            <option value="30">30</option><option value="60" selected>60</option>
+            <option value="100">100</option><option value="9999">不限</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>翻卡后自动朗读</label>
+          <input type="checkbox" id="setSpeak" class="switch">
+        </div>
+        <div class="form-row">
+          <label>学习背景音乐 BGM</label>
+          <input type="checkbox" id="setBgm" class="switch">
+        </div>
+        <div class="form-row">
+          <label>BGM 音量</label>
+          <input type="range" id="setBgmVol" min="0" max="100" step="5">
+        </div>
+        <div class="form-row">
+          <label>操作音效</label>
+          <input type="checkbox" id="setSfx" class="switch">
+        </div>
+        <div class="form-row">
+          <label>音效音量</label>
+          <input type="range" id="setSfxVol" min="0" max="100" step="5">
+        </div>
+        <p class="muted">BGM 与音效都由浏览器实时合成（和弦垫 + 铃音 / 答对上行三音、答错下行滑音），不下载任何音频文件，离线也能播。</p>
+      </div>
+
+      <div class="panel">
+        <h3>安装到手机</h3>
+        <p class="muted" id="installTip">把本应用添加到主屏幕，即可像原生 App 一样全屏打开，断网也能学。</p>
+        <div class="sum-actions">
+          <button class="btn primary" id="btnInstall">添加到主屏幕</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>数据与备份</h3>
+        <p class="muted">术语学习进度全部包含在内，登录后会随云端同步。导入采用<strong>合并</strong>而非覆盖，不会抹掉你已有的卡片。</p>
+        <div class="sum-actions">
+          <button class="btn ghost" id="btnExport">导出 JSON</button>
+          <button class="btn ghost" id="btnImport">导入 JSON</button>
+        </div>
+        <input type="file" id="importFile" accept="application/json" hidden>
+
+        <h3 style="margin-top:18px">本地快照</h3>
+        <p class="muted">同步覆盖前、以及导入 / 恢复 / 清空前，都会自动在此留一份快照（最多 5 份）。发现数据不对时可一键回退。</p>
+        <div class="lib-list" id="bakList"></div>
+      </div>
+
+      <div class="panel">
+        <h3>清空记录</h3>
+        <p class="muted"><strong>「仅清本机」</strong>：只删这台设备的数据，云端不动 —— 重新登录后会从云端恢复。<strong>「本机 + 云端」</strong>：两边一起删，不可恢复（会先自动留快照）。</p>
+        <div class="sum-actions">
+          <button class="btn ghost" id="btnResetLocal">仅清本机</button>
+          <button class="btn danger" id="btnResetAll">本机 + 云端</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>手势与快捷键</h3>
+        <ul class="keys">
+          <li><kbd>轻触卡片</kbd> 翻卡</li>
+          <li><kbd>右滑</kbd> 认识 · <kbd>上滑</kbd> 模糊 · <kbd>左滑</kbd> 不认识</li>
+          <li class="kbd-only"><kbd>空格</kbd> 翻卡 · <kbd>1</kbd>/<kbd>2</kbd>/<kbd>3</kbd> 评分</li>
+          <li class="kbd-only"><kbd>B</kbd> BGM 开关 · <kbd>Esc</kbd> 关闭弹窗</li>
+        </ul>
+      </div>
+          <div class="panel">
+        <h3>关于与免责</h3>
+        <p class="muted">本应用是个人架构术语学习工具，术语内容为原创整理，仅供学习交流，并非官方出版物，也与「计算机技术与软件专业技术资格（水平）考试」主办方无任何关联；如相关内容涉及版权，请联系即删。</p>
+        <p class="muted" style="margin-top:8px">隐私说明：学习进度默认保存在本机浏览器；登录后仅用于多端同步（账号与学习进度），不收集其他个人信息。</p>
+      </div>
+</section>
+
+    <!-- 账号 -->
+    <section class="view" id="view-account">
+      <div class="panel" id="acctAuth">
+        <h3>登录 / 注册</h3>
+        <div class="form-row">
+          <label>邮箱或用户名</label>
+          <input type="text" id="acctEmail" placeholder="you@example.com 或 用户名" class="wide" autocomplete="username" autocapitalize="none" spellcheck="false">
+        </div>
+        <div class="form-row">
+          <label>密码</label>
+          <input type="password" id="acctPwd" placeholder="至少 6 位" class="wide" autocomplete="current-password">
+        </div>
+        <div class="sum-actions" style="justify-content:flex-start">
+          <button class="btn primary" id="btnSignIn">登录</button>
+          <button class="btn ghost" id="btnSignUp">注册</button>
+        </div>
+        <p class="muted hidden" id="acctErr"></p>
+        <p class="muted" style="margin:8px 0 0;font-size:11.5px;line-height:1.6">没有邮箱也能用：直接填用户名（3–32 位，字母或数字开头，可含 <code>.</code> <code>_</code> <code>-</code>），登录时填同样的用户名即可。</p>
+        <p class="muted hidden" id="acctNoCfg" style="margin-top:10px">当前版本未内置云端服务，登录暂不可用。学习记录仍会完整保存在本机，云端服务恢复后自动续上。</p>
+      </div>
+
+      <div class="panel hidden" id="acctUser">
+        <h3>已登录</h3>
+        <div class="acct-box">
+          <div><b id="acctEmailShow"></b><span class="muted" id="acctSyncInfo"></span></div>
+          <span class="badge" id="acctStatus"></span>
+        </div>
+        <div class="sum-actions" style="justify-content:flex-start">
+          <button class="btn primary" id="btnSyncNow">立即同步</button>
+          <button class="btn ghost" id="btnSignOut">退出登录</button>
+        </div>
+        <p class="hidden" id="acctUserMsg"></p>
+        <p class="muted" style="margin-top:10px">两端都在线时会自动同步：本机改动 2.5 秒后上传，切回页面时拉取云端最新数据。</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- 底部 Tab 导航 -->
+  <nav class="tabbar" id="nav">
+    <button class="tab-item active" data-view="learn"><span class="ic">◎</span><span class="lb">学习</span></button>
+    <button class="tab-item" data-view="library"><span class="ic">▤</span><span class="lb">词库</span></button>
+    <button class="tab-item" data-view="quiz"><span class="ic">✓</span><span class="lb">自测</span></button>
+    <button class="tab-item" data-view="stats"><span class="ic">▲</span><span class="lb">统计</span></button>
+    <button class="tab-item" data-view="settings"><span class="ic">⚙</span><span class="lb">设置</span></button>
+    <button class="tab-item" data-view="account"><span class="ic">☺</span><span class="lb">账号</span></button>
+  </nav>
+</div>
+
+<div class="modal hidden" id="modal">
+  <div class="modal-box">
+    <button class="icon-btn close" id="modalClose">✕</button>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- 数据文件（terms/questions/case/essay/points）改为运行时按需懒加载，见 app.js ensure*()，首屏只载核心壳 -->
+<script src="assets/js/store.js"></script>
+<script src="assets/js/srs.js"></script>
+<script src="assets/js/config.js"></script>
+<script src="assets/js/sync.js"></script>
+<script src="assets/js/bgm.js"></script>
+<script src="assets/js/app.js"></script>
+<script src="assets/js/pwa.js"></script>
+</body>
+</html>

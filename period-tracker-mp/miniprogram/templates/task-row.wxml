@@ -29,6 +29,7 @@
     </view>
     <view class="swipe-clip">
       <view class="swipe-actions">
+        <view class="swipe-btn edit" data-id="{{id}}" data-path="{{path}}" catchtap="onSwipeEdit">编辑</view>
         <view class="swipe-btn defer" data-id="{{id}}" data-path="{{path}}" catchtap="onSwipeDefer">推迟</view>
         <view class="swipe-btn del" data-id="{{id}}" data-path="{{path}}" catchtap="onSwipeDelete">删除</view>
       </view>

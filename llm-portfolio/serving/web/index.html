@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="data:,">
+  <title>数据开发助手 · Text-to-SQL 工作台</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">D</div>
+      <div class="brand-text">
+        <strong>数据开发助手</strong>
+        <span>Text-to-SQL Workbench</span>
+      </div>
+    </div>
+
+    <nav class="nav" id="nav">
+      <button class="nav-item active" data-view="sql">
+        <span class="nav-ico">&#9635;</span><span>SQL 工作台</span>
+      </button>
+      <button class="nav-item" data-view="rag">
+        <span class="nav-ico">&#9776;</span><span>指标口径问答</span>
+      </button>
+      <button class="nav-item" data-view="eval">
+        <span class="nav-ico">&#9650;</span><span>评测报告</span>
+      </button>
+      <button class="nav-item" data-view="status">
+        <span class="nav-ico">&#9673;</span><span>系统状态</span>
+      </button>
+    </nav>
+
+    <div class="side-foot">
+      <div class="side-label">项目定位</div>
+      <p>把现成 7B 基座调成能干特定活：<br>数据流水线 → LoRA-SFT → 自动评测 → RAG</p>
+      <div class="side-meta" id="sideMeta">加载中…</div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <h1 id="viewTitle">SQL 工作台</h1>
+        <p id="viewSubtitle">用自然语言提问，生成可执行 SQL 并查看结果</p>
+      </div>
+      <div class="top-right">
+        <span class="badge" id="modelBadge"><i class="dot"></i>检测中</span>
+        <a class="ghost-btn" href="/docs" target="_blank">API 文档</a>
+      </div>
+    </header>
+
+    <!-- ============ SQL 工作台 ============ -->
+    <section class="view active" id="view-sql">
+      <div class="grid-2">
+        <div class="card ask-card">
+          <div class="card-head">
+            <h2>提出问题</h2>
+            <span class="tag">Text-to-SQL</span>
+          </div>
+          <p class="hint">描述你要查的指标与时间范围，越具体越好。会自动带上数仓表结构。</p>
+          <textarea id="sqlQuestion" rows="4" placeholder="例如：统计 2024-03 的 GMV（排除取消单）"></textarea>
+          <div class="chips" id="sqlChips"></div>
+          <label class="switch-row">
+            <input type="checkbox" id="sqlExecute" checked>
+            <span class="switch"></span>
+            <span>在测试库执行并返回结果</span>
+          </label>
+          <button class="primary-btn" id="sqlRun">
+            <span class="btn-label">生成 SQL</span><span class="spinner" hidden></span>
+          </button>
+        </div>
+
+        <div class="card result-card">
+          <div class="card-head">
+            <h2>生成的 SQL</h2>
+            <button class="mini-btn" id="copySql" disabled>复制</button>
+          </div>
+          <pre class="code" id="sqlCode"><span class="placeholder">等待提问…</span></pre>
+          <div class="meta-row" id="sqlMeta"></div>
+          <div class="err-box" id="sqlError" hidden></div>
+        </div>
+      </div>
+
+      <div class="card table-card">
+        <div class="card-head">
+          <h2>执行结果</h2>
+          <span class="tag subtle" id="rowCount">—</span>
+        </div>
+        <div class="table-wrap" id="sqlTableWrap">
+          <div class="empty">生成 SQL 后，这里会展示查询返回的数据</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 指标口径问答 ============ -->
+    <section class="view" id="view-rag">
+      <div class="card ask-card full">
+        <div class="card-head">
+          <h2>问一个口径问题</h2>
+          <span class="tag">RAG · 带引用回答</span>
+        </div>
+        <p class="hint">从数据字典 / 指标口径文档检索相关内容，拼进 Prompt 后由模型生成答案，并标注引用来源。</p>
+        <textarea id="ragQuestion" rows="3" placeholder="例如：GMV 要排除取消单吗？依据是什么"></textarea>
+        <div class="chips" id="ragChips"></div>
+        <button class="primary-btn" id="ragRun">
+          <span class="btn-label">检索并回答</span><span class="spinner" hidden></span>
+        </button>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head"><h2>回答</h2><span class="tag subtle" id="ragModel"></span></div>
+          <div class="answer" id="ragAnswer"><span class="placeholder">等待提问…</span></div>
+          <div class="err-box" id="ragNote" hidden></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>引用来源</h2><span class="tag subtle" id="ragHitCount">0 条</span></div>
+          <div class="cites" id="ragCites"><div class="empty">检索到的文档片段会显示在这里</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 评测报告 ============ -->
+    <section class="view" id="view-eval">
+      <div class="metric-row" id="evalMetrics"></div>
+      <div class="card table-card">
+        <div class="card-head">
+          <h2>前后对比表</h2>
+          <button class="mini-btn" id="evalRefresh">刷新</button>
+        </div>
+        <div class="table-wrap" id="evalTableWrap"><div class="empty">加载中…</div></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>评测报告原文</h2><span class="tag subtle">eval/report.md</span></div>
+        <pre class="report" id="evalReport">加载中…</pre>
+      </div>
+    </section>
+
+    <!-- ============ 系统状态 ============ -->
+    <section class="view" id="view-status">
+      <div class="metric-row" id="statusCards"></div>
+      <div class="card">
+        <div class="card-head"><h2>系统链路</h2><span class="tag subtle">架构</span></div>
+        <div class="flow">
+          <div class="flow-node"><b>原始语料</b><span>种子样本 + 公开数据集</span></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node"><b>数据流水线</b><span>清洗 / 去重 / 分层 / 冻结</span></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node"><b>LoRA-SFT</b><span>LLaMA-Factory / Unsloth</span></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node"><b>自动评测</b><span>SQL 执行结果比对</span></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node"><b>RAG + API</b><span>口径问答 / 四端点</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>接口清单</h2></div>
+        <div class="api-list">
+          <div><code>POST /sql</code><span>自然语言 → SQL（可选执行）</span></div>
+          <div><code>POST /rag</code><span>检索数据字典并生成带引用回答</span></div>
+          <div><code>GET /evaluate</code><span>各组评测指标与对比表</span></div>
+          <div><code>GET /health</code><span>依赖就绪状态</span></div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="foot">数据开发助手 · 作品集项目 · 评测集已冻结，对比数字以 eval/report.md 为准</footer>
+  </main>
+</div>
+<script src="/static/app.js"></script>
+</body>
+</html>

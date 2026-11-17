@@ -1,0 +1,89 @@
+/**
+ * 全局样式：主题变量与 Web 版 style.css 保持一致（深色为主）。
+ * 页面级样式在各 pages/*/ 的 wxss 中维护。
+ */
+page {
+  --bg: #0e1117;
+  --bg-soft: #151a23;
+  --panel: #171d27;
+  --panel-2: #1d2430;
+  --line: #262f3d;
+  --text: #e6edf6;
+  --text-dim: #93a1b5;
+  --accent: #5b8cff;
+  --accent-2: #7b5bff;
+  --good: #3ecf8e;
+  --warn: #f5b14c;
+  --bad: #f2647a;
+
+  background: var(--bg);
+  color: var(--text);
+  font-size: 28rpx;
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue',
+    'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+}
+
+view, text, button, input, textarea, scroll-view {
+  box-sizing: border-box;
+}
+
+.muted {
+  color: var(--text-dim);
+  font-size: 24rpx;
+  line-height: 1.6;
+}
+
+.btn {
+  border-radius: 12rpx;
+  padding: 18rpx 36rpx;
+  font-size: 28rpx;
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1rpx solid var(--line);
+  line-height: 1.4;
+}
+
+.btn.primary {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.btn.ghost {
+  background: transparent;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1rpx solid var(--line);
+  border-radius: 16rpx;
+  padding: 28rpx;
+  margin: 24rpx;
+}
+
+/* 页面根视图：保证浅色主题下背景也能覆盖整屏 */
+.page {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/**
+ * 浅色主题：只覆盖 CSS 变量。
+ * 各页面根视图 class 绑定 theme-{{theme}}，变量在根视图上被覆盖后全子树生效
+ * （canvas 图表色在小程序端无法读变量，由 JS 按 Store.data.settings.theme 单独取色）。
+ */
+.theme-light {
+  --bg: #f4f6fa;
+  --bg-soft: #ffffff;
+  --panel: #ffffff;
+  --panel-2: #eef1f6;
+  --line: #dbe2ec;
+  --text: #1a2230;
+  --text-dim: #5b6b82;
+  --accent: #3b6fe0;
+  --accent-2: #6a48d8;
+  --good: #1fa86a;
+  --warn: #c8871a;
+  --bad: #d94156;
+}

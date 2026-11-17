@@ -1,0 +1,45 @@
+{
+  "appid": "wxb3df8ccffd1d95d4",
+  "compileType": "game",
+  "projectname": "wechat-minigame",
+  "setting": {
+    "es6": true,
+    "postcss": false,
+    "minified": false,
+    "urlCheck": false,
+    "compileWorklet": false,
+    "uglifyFileName": false,
+    "uploadWithSourceMap": true,
+    "enhance": false,
+    "packNpmManually": false,
+    "packNpmRelationList": [],
+    "minifyWXSS": true,
+    "minifyWXML": true,
+    "localPlugins": false,
+    "disableUseStrict": false,
+    "useCompilerPlugins": false,
+    "condition": false,
+    "babelSetting": {
+      "ignore": [],
+      "disablePlugins": [],
+      "outputPath": ""
+    }
+  },
+  "libVersion": "latest",
+  "packOptions": {
+    "ignore": [
+      {
+        "value": "assets",
+        "type": "folder"
+      },
+      {
+        "value": "tools",
+        "type": "folder"
+      }
+    ],
+    "include": []
+  },
+  "simulatorPluginLibVersion": {},
+  "isGameTourist": false,
+  "editorSetting": {}
+}

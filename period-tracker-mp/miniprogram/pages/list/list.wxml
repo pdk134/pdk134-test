@@ -10,7 +10,7 @@
     <view class="stat-card"><text class="num">{{statRate}}</text><text class="label">本周完成率</text></view>
   </view>
 
-  <view wx:if="{{groups.length > 0}}" class="swipe-tip">← 左滑任务可推迟或删除</view>
+  <view wx:if="{{groups.length > 0}}" class="swipe-tip">← 左滑任务可编辑、推迟或删除</view>
 
   <block wx:for="{{groups}}" wx:key="key" wx:for-item="group">
     <view class="group-card">

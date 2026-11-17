@@ -1,0 +1,117 @@
+.page {
+  padding: 20rpx 24rpx 48rpx;
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+/* ---------- 搜索框 ---------- */
+.search { margin-bottom: 16rpx; }
+
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  background: var(--panel);
+  border: 1rpx solid var(--line);
+  border-radius: 999rpx;
+  padding: 16rpx 28rpx;
+}
+
+.search-ic { font-size: 24rpx; opacity: .6; }
+
+.search-box input {
+  flex: 1;
+  font-size: 26rpx;
+  color: var(--text);
+  height: 44rpx;
+  line-height: 44rpx;
+}
+
+.search-clear {
+  font-size: 22rpx;
+  color: var(--text-dim);
+  padding: 8rpx;
+}
+
+/* ---------- 分类横滑 ---------- */
+.cats { white-space: nowrap; margin-bottom: 14rpx; }
+
+.cat-row { display: inline-flex; gap: 12rpx; padding: 4rpx 0; }
+
+.cat {
+  display: inline-block;
+  font-size: 22rpx;
+  color: var(--text-dim);
+  background: var(--panel-2);
+  border: 1rpx solid var(--line);
+  border-radius: 999rpx;
+  padding: 10rpx 24rpx;
+  white-space: nowrap;
+}
+
+.cat.on {
+  color: #fff;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+/* ---------- 状态筛选 ---------- */
+.statuses { display: flex; gap: 12rpx; margin-bottom: 12rpx; }
+
+.st {
+  font-size: 22rpx;
+  color: var(--text-dim);
+  border-bottom: 4rpx solid transparent;
+  padding: 6rpx 8rpx;
+}
+
+.st.on {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  font-weight: 600;
+}
+
+.count { font-size: 20rpx; color: var(--text-dim); margin: 8rpx 4rpx 16rpx; }
+
+/* ---------- 列表 ---------- */
+.list { display: flex; flex-direction: column; gap: 16rpx; }
+
+.lib-item {
+  background: var(--panel);
+  border: 1rpx solid var(--line);
+  border-radius: 16rpx;
+  padding: 24rpx 28rpx;
+}
+
+.lib-top { display: flex; justify-content: space-between; align-items: center; }
+
+.lib-term { font-size: 30rpx; font-weight: 700; color: var(--text); }
+
+.badge {
+  font-size: 20rpx;
+  color: var(--text-dim);
+  background: var(--panel-2);
+  border: 1rpx solid var(--line);
+  border-radius: 999rpx;
+  padding: 6rpx 16rpx;
+  flex-shrink: 0;
+  margin-left: 16rpx;
+}
+
+.badge.mastered { color: var(--good); border-color: rgba(62, 207, 142, .5); }
+.badge.learning { color: var(--warn); border-color: rgba(245, 177, 76, .5); }
+
+.lib-en { font-size: 22rpx; color: var(--text-dim); margin-top: 8rpx; }
+
+.lib-def {
+  font-size: 24rpx;
+  color: var(--text-dim);
+  line-height: 1.65;
+  margin-top: 10rpx;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.empty { text-align: center; }

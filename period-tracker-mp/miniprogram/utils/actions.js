@@ -48,7 +48,7 @@ function change(ctx) {
 }
 
 /* ---------------- 左滑任务行（日历页 / 清单页） ---------------- */
-var SWIPE_WIDTH_RPX = 260;   // 两个操作按钮，各 130rpx
+var SWIPE_WIDTH_RPX = 390;   // 三个操作按钮，各 130rpx
 
 function swipeMax() {
   var w = 375;
@@ -146,6 +146,14 @@ function createHandlers() {
       change(this);
       // 顺手补一次订阅额度（一次性订阅：授权一次只能发一条，额度会随使用消耗）
       Remind.ensureAuth();
+    },
+
+    /** 左滑 → 编辑：先收起行，再打开编辑弹窗 */
+    onSwipeEdit: function (e) {
+      var ds = e.currentTarget.dataset;
+      if (!Store.get(ds.id)) return;
+      closeRow(this, ds.path);
+      this.openEditor(ds.id);
     },
 
     onSwipeDefer: function (e) {

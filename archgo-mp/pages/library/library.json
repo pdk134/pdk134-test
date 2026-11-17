@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "词库",
+  "usingComponents": {
+    "term-detail": "/components/term-detail/term-detail"
+  }
+}

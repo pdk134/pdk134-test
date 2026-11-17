@@ -1,0 +1,49 @@
+<view class="page theme-{{theme}}">
+
+  <!-- 当前模式 -->
+  <view class="panel">
+    <view class="mode-head">
+      <view class="mode-dot"></view>
+      <view class="mode-main">
+        <view class="mode-title">本地模式</view>
+        <view class="mode-sub">学习记录仅保存在本机，开箱即用，无需登录</view>
+      </view>
+    </view>
+    <view class="mode-stats">
+      <view class="ms-cell"><b>{{cards}}</b><span>已学术语</span></view>
+      <view class="ms-cell"><b>{{reviewed}}</b><span>累计复习</span></view>
+      <view class="ms-cell"><b>{{streak}}</b><span>连续天数</span></view>
+    </view>
+  </view>
+
+  <!-- 微信一键登录 -->
+  <view class="panel">
+    <view class="sec-title">微信一键登录</view>
+    <view class="row-sub">登录后可开启云同步：换手机、重装小程序都不丢进度，多设备学习记录自动合并。</view>
+    <button class="btn primary login-btn" bindtap="onLogin">微信一键登录（考后开放）</button>
+    <view class="row-sub">云同步依赖微信云开发服务，将在考试结束、联调完成后上线。当前可在「设置 → 数据」中手动导出备份。</view>
+  </view>
+
+  <!-- 数据与隐私 -->
+  <view class="panel">
+    <view class="sec-title">数据与隐私</view>
+    <view class="pv-item">
+      <text class="pv-k">我们收集什么</text>
+      <text class="pv-v">不收集任何个人信息。学习进度、设置均只存本机。</text>
+    </view>
+    <view class="pv-item">
+      <text class="pv-k">数据存在哪</text>
+      <text class="pv-v">微信小程序本地存储（约 1MB 上限）。卸载小程序会删除本机记录，重要进度请先在设置页导出。</text>
+    </view>
+    <view class="pv-item">
+      <text class="pv-k">网络权限</text>
+      <text class="pv-v">仅加载术语词库与必要的小程序框架资源，无统计 SDK、无广告。</text>
+    </view>
+  </view>
+
+  <!-- 免责声明 -->
+  <view class="panel">
+    <view class="sec-title">免责声明</view>
+    <view class="row-sub">本小程序为个人备考「软考 · 系统架构设计师」时整理的学习工具，术语卡片内容为个人归纳的学习资料，与任何官方考试机构无关，不构成任何考试承诺或保证。请以官方教材与考试大纲为准。</view>
+  </view>
+</view>

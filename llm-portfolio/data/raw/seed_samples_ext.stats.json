@@ -1,0 +1,32 @@
+{
+  "generated": 274,
+  "unique_structures": 274,
+  "skipped_not_executable": 0,
+  "by_theme": {
+    "指标口径": 89,
+    "分组统计": 30,
+    "JOIN聚合": 117,
+    "子查询": 12,
+    "窗口函数": 8,
+    "CTE/UNION": 2,
+    "去重逻辑": 7,
+    "时间口径": 6,
+    "分区裁剪": 3
+  },
+  "by_template": {
+    "AGG_WHERE": 78,
+    "GROUP_BY": 30,
+    "JOIN_AGG": 100,
+    "MULTI_JOIN": 24,
+    "SUBQUERY": 12,
+    "WINDOW": 8,
+    "CTE/UNION": 2,
+    "POINT_LOOKUP": 20
+  },
+  "by_level": {
+    "medium": 211,
+    "hard": 43,
+    "easy": 20
+  },
+  "skipped_examples": []
+}

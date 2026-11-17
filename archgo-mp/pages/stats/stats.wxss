@@ -1,0 +1,189 @@
+/* ========== 统计页 ========== */
+
+/* 总量速览 */
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16rpx;
+  padding: 24rpx 24rpx 0;
+}
+
+.stat-cell {
+  background: var(--panel);
+  border: 1rpx solid var(--line);
+  border-radius: 14rpx;
+  padding: 24rpx 0;
+  text-align: center;
+}
+
+.stat-cell b {
+  display: block;
+  font-size: 48rpx;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.stat-cell span {
+  display: block;
+  margin-top: 6rpx;
+  font-size: 22rpx;
+  color: var(--text-dim);
+}
+
+.stat-cell.good b { color: var(--good); }
+.stat-cell.warn b { color: var(--warn); }
+
+/* 区块标题 */
+.sec-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 20rpx;
+}
+
+/* 环形图 */
+.donut-wrap {
+  position: relative;
+  width: 300rpx;
+  height: 300rpx;
+  margin: 0 auto;
+}
+
+.chart {
+  display: block;
+  width: 100%;
+}
+
+.chart.donut {
+  width: 300rpx;
+  height: 300rpx;
+}
+
+.chart.bars {
+  width: 100%;
+  height: 300rpx;
+}
+
+.donut-center {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.donut-pct {
+  font-size: 56rpx;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.donut-sub {
+  margin-top: 4rpx;
+  font-size: 22rpx;
+  color: var(--text-dim);
+}
+
+/* 图例 */
+.legend {
+  margin-top: 24rpx;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24rpx;
+  justify-content: center;
+}
+
+.lg-item {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  font-size: 24rpx;
+  color: var(--text-dim);
+}
+
+.lg-item .dot {
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: 50%;
+}
+
+/* 分类进度 */
+.cat-row {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  padding: 12rpx 0;
+}
+
+.cat-name {
+  width: 130rpx;
+  flex: none;
+  font-size: 24rpx;
+  color: var(--text);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.cat-bar {
+  flex: 1;
+  height: 14rpx;
+  background: var(--panel-2);
+  border-radius: 8rpx;
+  overflow: hidden;
+}
+
+.cat-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  border-radius: 8rpx;
+}
+
+.cat-num {
+  width: 90rpx;
+  flex: none;
+  text-align: right;
+  font-size: 22rpx;
+  color: var(--text-dim);
+}
+
+/* 难词本 */
+.hard-item {
+  padding: 20rpx 24rpx;
+  background: var(--panel-2);
+  border: 1rpx solid var(--line);
+  border-left: 4rpx solid var(--warn);
+  border-radius: 10rpx;
+  margin-bottom: 12rpx;
+}
+
+.hard-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
+.hard-term {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.hard-badge {
+  flex: none;
+  font-size: 20rpx;
+  color: var(--warn);
+}
+
+.hard-def {
+  margin-top: 6rpx;
+  font-size: 24rpx;
+  line-height: 1.5;
+  color: var(--text-dim);
+}

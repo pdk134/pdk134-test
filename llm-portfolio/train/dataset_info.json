@@ -1,0 +1,11 @@
+{
+  "warehouse_sft": {
+    "file_name": "../data/train.jsonl",
+    "formatting": "alpaca",
+    "columns": {
+      "prompt": "instruction",
+      "query": "input",
+      "response": "output"
+    }
+  }
+}

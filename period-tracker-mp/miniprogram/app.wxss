@@ -171,12 +171,13 @@
 .swipe-clip { position: relative; overflow: hidden; }
 .swipe-actions {
   position: absolute; top: 0; right: 0; bottom: 0;
-  width: 260rpx; display: flex;
+  width: 390rpx; display: flex;
 }
 .swipe-btn {
   flex: 1; display: flex; align-items: center; justify-content: center;
   font-size: 25rpx; color: #fff;
 }
+.swipe-btn.edit { background: var(--primary); }
 .swipe-btn.defer { background: var(--accent); }
 .swipe-btn.del { background: var(--overdue); }
 .swipe-tip {
@@ -187,9 +188,9 @@
 .swipe-content.anim { transition: transform 0.22s ease; }
 .swipe-content .task-row { border-bottom: none; }
 
-/* 推迟：浮在「推迟」按钮上方的小框 */
+/* 推迟：浮在「推迟」按钮上方的小框（推迟按钮居中，右侧留出删除按钮宽度） */
 .defer-pop {
-  position: absolute; right: -15rpx; bottom: 100%; margin-bottom: 10rpx;
+  position: absolute; right: 115rpx; bottom: 100%; margin-bottom: 10rpx;
   width: 420rpx; box-sizing: border-box;
   z-index: 30; display: flex; align-items: center; justify-content: space-between;
   background: var(--card); border: 1rpx solid var(--border);

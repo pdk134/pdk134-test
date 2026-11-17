@@ -1,0 +1,22 @@
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: serving/Dockerfile
+    image: llm-portfolio-api:0.1.0
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../data:/app/data
+      - ../eval/results:/app/eval/results
+      - ../rag/index:/app/rag/index
+    environment:
+      # 指向本机或远端的 OpenAI 兼容服务（vLLM / 云端 API）
+      LLM_API_BASE: ${LLM_API_BASE:-http://host.docker.internal:8001/v1}
+      LLM_API_KEY: ${LLM_API_KEY:-EMPTY}
+      LLM_MODEL: ${LLM_MODEL:-Qwen/Qwen2.5-7B-Instruct}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3

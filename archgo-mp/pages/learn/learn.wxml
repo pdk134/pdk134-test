@@ -1,0 +1,107 @@
+<view class="page theme-{{theme}}">
+
+  <!-- 考前倒计时横幅 -->
+  <view class="cd-bar {{cd.mode}}">
+    <view class="cd-left">
+      <view class="cd-label">{{cd.label}}</view>
+      <view class="cd-main">
+        <text class="cd-days">{{cd.days}}</text>
+        <text class="cd-unit" wx:if="{{cd.unit}}">{{cd.unit}}</text>
+      </view>
+    </view>
+    <view class="cd-right">
+      <view class="cd-time">{{cd.time}}</view>
+      <view class="cd-date">{{cd.date}}</view>
+    </view>
+  </view>
+
+  <!-- 今日统计条 -->
+  <view class="side">
+    <text>今日新学 <b>{{side.n}}</b></text>
+    <text>复习 <b>{{side.r}}</b></text>
+    <text>连续 <b>{{side.streak}}</b> 天</text>
+  </view>
+
+  <!-- 空态 -->
+  <view class="panel empty" wx:if="{{empty}}">
+    <view class="empty-title">{{emptyTitle}}</view>
+    <view class="muted">{{emptyText}}</view>
+    <view class="sum-actions">
+      <button class="btn" bindtap="onStartToday">开始今天的学习</button>
+      <button class="btn ghost" bindtap="onExtra">加练 20 个</button>
+    </view>
+  </view>
+
+  <!-- 完成总结 -->
+  <view class="panel summary" wx:elif="{{done}}">
+    <view class="sum-title">今日学习完成</view>
+    <view class="sum-grid">
+      <view class="sum-cell"><b>{{summary.total}}</b><span>共学</span></view>
+      <view class="sum-cell"><b>{{summary.newCount}}</b><span>新学</span></view>
+      <view class="sum-cell"><b>{{summary.okCount}}</b><span>认识</span></view>
+      <view class="sum-cell"><b>{{summary.acc}}</b><span>正确率</span></view>
+    </view>
+    <view class="sum-actions">
+      <button class="btn" bindtap="onAgain">再来一组</button>
+    </view>
+  </view>
+
+  <!-- 学习主体 -->
+  <block wx:else>
+    <view class="progress">
+      <view class="bar"><view class="fill" style="width:{{pct}}%"></view></view>
+      <text class="counter">{{idx}} / {{total}}</text>
+    </view>
+
+    <view class="chips">
+      <text class="chip {{c.on ? 'on' : ''}}" wx:for="{{chips}}" wx:key="*this">{{c.text}}</text>
+    </view>
+
+    <view class="card {{flipped ? 'flipped' : ''}}" bindtouchstart="onCardStart" bindtouchend="onCardEnd">
+      <!-- 正面 -->
+      <view class="face front">
+        <view class="f-top">
+          <text class="f-cat">{{card.cat}}</text>
+          <text class="f-lv">{{card.lv}}</text>
+        </view>
+        <view class="f-mid">
+          <view class="f-term">{{card.t}}</view>
+          <view class="f-en">{{card.en}}</view>
+          <view class="f-ja">{{card.ja}}</view>
+        </view>
+        <view class="f-hint">轻触翻卡看释义 · 翻面后评分</view>
+      </view>
+      <!-- 背面 -->
+      <view class="face back">
+        <view class="b-head">
+          <text class="b-term">{{card.bTerm}}</text>
+          <text class="b-ja">{{card.bJa}}</text>
+        </view>
+        <scroll-view scroll-y class="b-body">
+          <view class="b-def">{{card.def}}</view>
+          <view class="b-sec">要点</view>
+          <view class="b-points">
+            <view class="bp" wx:for="{{card.points}}" wx:key="*this">{{item}}</view>
+          </view>
+          <view class="b-sec">典型场景</view>
+          <view class="b-eg">{{card.eg}}</view>
+          <view class="b-sec">相关术语</view>
+          <view class="b-rel">
+            <text class="tag" wx:for="{{card.rel}}" wx:key="*this"
+                  data-goto="{{item}}" catchtap="onRelTap">{{item}}</text>
+          </view>
+        </scroll-view>
+      </view>
+    </view>
+
+    <view class="rate-bar {{rateDisabled ? 'disabled' : ''}}">
+      <button class="rate r0" bindtap="onRate0">← 不认识</button>
+      <button class="rate r1" bindtap="onRate1">↑ 模糊</button>
+      <button class="rate r2" bindtap="onRate2">认识 →</button>
+    </view>
+    <view class="rate-hint">也支持手势：翻面后右滑认识 · 上滑模糊 · 左滑不认识</view>
+  </block>
+
+  <term-detail visible="{{modal.visible}}" term="{{modal.term}}"
+               bind:close="onModalClose" bind:goto="onModalGoto"/>
+</view>

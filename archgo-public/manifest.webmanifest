@@ -1,0 +1,25 @@
+{
+  "name": "架构术语学习通",
+  "short_name": "术语学习",
+  "description": "像背单词一样学习中文架构术语：闪卡 + 间隔重复 + 选择题测试，支持多端同步与离线使用。",
+  "id": "/",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
+  "orientation": "portrait-primary",
+  "background_color": "#0e1117",
+  "theme_color": "#0e1117",
+  "lang": "zh-CN",
+  "dir": "ltr",
+  "categories": ["education", "productivity"],
+  "icons": [
+    { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "今日学习", "short_name": "学习", "url": "./index.html" },
+    { "name": "选择题测试", "short_name": "测试", "url": "./index.html" }
+  ]
+}

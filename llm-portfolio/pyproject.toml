@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "llm-portfolio"
+version = "0.1.0"
+description = "数据开发助手：基于 LoRA-SFT + RAG 的 Text-to-SQL 与指标口径问答系统"
+requires-python = ">=3.10"
+readme = "README.md"
+
+[tool.setuptools]
+packages = ["common", "pipeline", "eval", "rag", "serving", "train"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

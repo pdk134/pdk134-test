@@ -1,0 +1,140 @@
+/* ========== 设置页 ========== */
+
+.sec-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8rpx;
+}
+
+/* 设置行 */
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24rpx;
+  padding: 20rpx 0 8rpx;
+}
+
+.row-main { flex: 1; }
+
+.row-label {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.row-sub {
+  font-size: 22rpx;
+  color: var(--text-dim);
+  line-height: 1.6;
+  margin-top: 6rpx;
+}
+
+.row-val {
+  flex: none;
+  min-width: 64rpx;
+  text-align: center;
+  font-size: 36rpx;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.slider {
+  margin: 8rpx 8rpx 12rpx;
+}
+
+/* 分段选择（主题） */
+.seg {
+  display: flex;
+  gap: 0;
+  margin: 20rpx 0 16rpx;
+  background: var(--panel-2);
+  border: 1rpx solid var(--line);
+  border-radius: 12rpx;
+  padding: 5rpx;
+}
+
+.seg-item {
+  flex: 1;
+  text-align: center;
+  padding: 16rpx 0;
+  font-size: 26rpx;
+  color: var(--text-dim);
+  border-radius: 9rpx;
+}
+
+.seg-item.on {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* 数据面板 */
+.import-area {
+  width: 100%;
+  height: 160rpx;
+  margin: 20rpx 0 16rpx;
+  padding: 20rpx;
+  font-size: 24rpx;
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--panel-2);
+  border: 1rpx solid var(--line);
+  border-radius: 12rpx;
+}
+
+/* 快照列表 */
+.bak-item {
+  padding: 20rpx 24rpx;
+  background: var(--panel-2);
+  border: 1rpx solid var(--line);
+  border-radius: 10rpx;
+  margin-top: 12rpx;
+}
+
+.bak-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
+.bak-time {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.bak-restore {
+  flex: none;
+  font-size: 22rpx;
+  color: var(--accent);
+  border: 1rpx solid var(--accent);
+  border-radius: 999rpx;
+  padding: 4rpx 20rpx;
+}
+
+.bak-meta {
+  margin-top: 6rpx;
+  font-size: 22rpx;
+  color: var(--text-dim);
+}
+
+/* 危险区 */
+.btn.danger {
+  color: var(--bad);
+  border-color: rgba(217, 65, 86, .5);
+  background: rgba(217, 65, 86, .08);
+  width: 100%;
+  margin-top: 12rpx;
+  font-weight: 600;
+}
+
+/* 关于 */
+.about-line {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 10rpx;
+}

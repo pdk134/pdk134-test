@@ -1,0 +1,79 @@
+<view class="page theme-{{theme}}">
+
+  <!-- 学习设置 -->
+  <view class="panel">
+    <view class="sec-title">学习设置</view>
+
+    <view class="row">
+      <view class="row-main">
+        <view class="row-label">每日新词上限</view>
+        <view class="row-sub">每天最多学多少个新术语</view>
+      </view>
+      <text class="row-val">{{dailyNew}}</text>
+    </view>
+    <slider class="slider" min="5" max="30" step="1"
+            value="{{dailyNew}}" activeColor="#5b8cff" backgroundColor="#1d2430"
+            block-size="24" bindchanging="onNewChanging" bindchange="onNewChange"/>
+
+    <view class="row">
+      <view class="row-main">
+        <view class="row-label">每日复习上限</view>
+        <view class="row-sub">每天最多复习多少个到期术语</view>
+      </view>
+      <text class="row-val">{{dailyReview}}</text>
+    </view>
+    <slider class="slider" min="10" max="200" step="10"
+            value="{{dailyReview}}" activeColor="#5b8cff" backgroundColor="#1d2430"
+            block-size="24" bindchanging="onRevChanging" bindchange="onRevChange"/>
+  </view>
+
+  <!-- 外观 -->
+  <view class="panel">
+    <view class="sec-title">外观</view>
+    <view class="seg">
+      <view class="seg-item {{theme === 'dark' ? 'on' : ''}}" data-v="dark" bindtap="onTheme">深色</view>
+      <view class="seg-item {{theme === 'light' ? 'on' : ''}}" data-v="light" bindtap="onTheme">浅色</view>
+    </view>
+    <view class="row-sub">浅色模式在户外强光下更清晰</view>
+  </view>
+
+  <!-- 数据 -->
+  <view class="panel">
+    <view class="sec-title">数据</view>
+    <button class="btn" bindtap="onExport">导出（复制到剪贴板）</button>
+    <view class="row-sub">导出内容为 JSON 文本，粘贴到任意位置保存即可；换机或重装后用它恢复。</view>
+    <textarea class="import-area" placeholder="在此粘贴导出的 JSON 内容"
+              value="{{importText}}" bindinput="onImportInput" maxlength="-1"
+              disable-default-padding="{{true}}"></textarea>
+    <button class="btn primary" bindtap="onImport">导入合并</button>
+  </view>
+
+  <!-- 快照 -->
+  <view class="panel">
+    <view class="sec-title">快照</view>
+    <block wx:if="{{backups.length > 0}}">
+      <view class="bak-item" wx:for="{{backups}}" wx:key="t"
+            data-t="{{item.t}}" bindtap="onBakTap">
+        <view class="bak-top">
+          <text class="bak-time">{{item.time}}</text>
+          <text class="bak-restore">恢复</text>
+        </view>
+        <view class="bak-meta">{{item.reason}} · {{item.cards}} 词 / {{item.reviewed}} 次</view>
+      </view>
+    </block>
+    <view class="muted" wx:else>还没有快照。导入 / 恢复 / 清空前都会自动创建。</view>
+  </view>
+
+  <!-- 危险区 -->
+  <view class="panel">
+    <view class="sec-title">危险区</view>
+    <button class="btn danger" bindtap="onWipe">清空本机学习记录</button>
+  </view>
+
+  <!-- 关于 -->
+  <view class="panel">
+    <view class="sec-title">关于</view>
+    <view class="about-line">架构术语学习通 · 小程序版</view>
+    <view class="muted">术语卡片内容为个人备考整理的学习资料，与任何官方考试机构无关。学习记录仅保存在本机，可随时导出备份；卸载小程序会同时删除本机记录，请先导出。</view>
+  </view>
+</view>

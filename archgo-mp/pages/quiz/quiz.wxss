@@ -1,0 +1,263 @@
+/* ========== 自测页 ========== */
+
+/* 开始面板 */
+.start-title {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 12rpx;
+}
+
+.count-label {
+  font-size: 26rpx;
+  color: var(--text-dim);
+  margin: 36rpx 0 16rpx;
+}
+
+.counts {
+  display: flex;
+  gap: 16rpx;
+}
+
+.counts .c {
+  flex: 1;
+  text-align: center;
+  padding: 20rpx 0;
+  font-size: 28rpx;
+  color: var(--text-dim);
+  background: var(--panel-2);
+  border: 1rpx solid var(--line);
+  border-radius: 12rpx;
+}
+
+.counts .c.on {
+  color: #fff;
+  background: var(--accent);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+
+.start-btn {
+  width: 100%;
+  margin-top: 48rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+}
+
+/* 进度条 */
+.progress {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  padding: 8rpx 24rpx 0;
+}
+
+.progress .bar {
+  flex: 1;
+  height: 10rpx;
+  background: var(--panel-2);
+  border-radius: 6rpx;
+  overflow: hidden;
+}
+
+.progress .fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  border-radius: 6rpx;
+  transition: width .25s ease;
+}
+
+.progress .counter {
+  font-size: 24rpx;
+  color: var(--text-dim);
+  min-width: 76rpx;
+  text-align: right;
+}
+
+/* 题干 */
+.question {
+  margin-top: 20rpx;
+}
+
+.q-text {
+  font-size: 36rpx;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--text);
+  word-break: break-all;
+}
+
+.q-tip {
+  margin-top: 14rpx;
+  font-size: 24rpx;
+  color: var(--text-dim);
+}
+
+/* 选项 */
+.options {
+  padding: 0 24rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.opt {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  padding: 24rpx 28rpx;
+  background: var(--panel);
+  border: 1rpx solid var(--line);
+  border-radius: 14rpx;
+  transition: border-color .15s ease, background .15s ease;
+}
+
+.opt:active {
+  background: var(--panel-2);
+}
+
+.opt-key {
+  flex: none;
+  width: 44rpx;
+  height: 44rpx;
+  line-height: 44rpx;
+  text-align: center;
+  font-size: 24rpx;
+  font-weight: 600;
+  color: var(--text-dim);
+  background: var(--panel-2);
+  border-radius: 50%;
+}
+
+.opt-text {
+  flex: 1;
+  font-size: 28rpx;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.opt.right {
+  border-color: var(--good);
+  background: rgba(62, 207, 142, .12);
+}
+
+.opt.right .opt-key {
+  color: #fff;
+  background: var(--good);
+}
+
+.opt.wrong {
+  border-color: var(--bad);
+  background: rgba(242, 100, 122, .12);
+}
+
+.opt.wrong .opt-key {
+  color: #fff;
+  background: var(--bad);
+}
+
+/* 判分反馈 */
+.feedback {
+  margin: 24rpx 24rpx 0;
+  padding: 24rpx 28rpx;
+  background: var(--panel);
+  border: 1rpx solid var(--line);
+  border-radius: 14rpx;
+  display: none;
+}
+
+.feedback.show {
+  display: block;
+}
+
+.fb-text {
+  font-size: 26rpx;
+  line-height: 1.7;
+  color: var(--text-dim);
+}
+
+.fb-next {
+  width: 100%;
+  margin-top: 24rpx;
+  font-weight: 600;
+}
+
+/* 结果 */
+.res-title {
+  font-size: 36rpx;
+  font-weight: 700;
+  text-align: center;
+  color: var(--text);
+}
+
+.res-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16rpx;
+  margin-top: 28rpx;
+}
+
+.res-cell {
+  background: var(--panel-2);
+  border-radius: 12rpx;
+  padding: 24rpx 0;
+  text-align: center;
+}
+
+.res-cell b {
+  display: block;
+  font-size: 44rpx;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.res-cell span {
+  display: block;
+  margin-top: 6rpx;
+  font-size: 22rpx;
+  color: var(--text-dim);
+}
+
+.res-sec {
+  margin-top: 36rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.wrong-list {
+  margin-top: 16rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.wrong-item {
+  padding: 20rpx 24rpx;
+  background: var(--panel-2);
+  border: 1rpx solid var(--line);
+  border-left: 4rpx solid var(--bad);
+  border-radius: 10rpx;
+}
+
+.w-term {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.w-def {
+  margin-top: 6rpx;
+  font-size: 24rpx;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+
+.sum-actions {
+  margin-top: 36rpx;
+}
+
+.sum-actions .btn {
+  width: 100%;
+  font-weight: 600;
+}

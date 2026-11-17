@@ -1,0 +1,4 @@
+# 轻量 RAG 依赖（可选；不装则自动降级到纯 Python TF-IDF 检索）
+-r requirements.txt
+faiss-cpu==1.9.0.post1
+sentence-transformers==3.3.1

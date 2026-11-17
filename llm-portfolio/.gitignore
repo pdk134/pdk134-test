@@ -1,0 +1,23 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+*.egg-info/
+.DS_Store
+
+# 生成物（不入库，靠脚本复现）
+data/warehouse.db
+data/processed/*
+!data/processed/.gitkeep
+data/train.jsonl
+data/eval.jsonl
+data/eval.jsonl.sha256
+rag/index/*
+!rag/index/.gitkeep
+eval/results/*
+!eval/results/.gitkeep
+outputs/
+
+# 冻结文件如需随仓库分发，可显式 git add -f data/eval.jsonl
+.env

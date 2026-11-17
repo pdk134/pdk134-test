@@ -1,0 +1,28 @@
+{
+  "description": "架构术语学习通 · 小程序原生版（概念卡片化学习）",
+  "appid": "wx5bda0426e4091985",
+  "compileType": "miniprogram",
+  "libVersion": "3.8.12",
+  "projectname": "archgo-mp",
+  "setting": {
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "minified": true,
+    "urlCheck": true,
+    "coverView": true,
+    "autoAudits": false,
+    "showShadowRootInWxmlPanel": true,
+    "scopeDataCheck": false,
+    "useCompilerPlugins": false
+  },
+  "packOptions": {
+    "ignore": [],
+    "include": []
+  },
+  "editorSetting": {
+    "tabIndent": "insertSpaces",
+    "tabSize": 2
+  },
+  "condition": {}
+}

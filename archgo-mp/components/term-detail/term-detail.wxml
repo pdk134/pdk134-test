@@ -1,0 +1,35 @@
+<view class="modal {{visible ? 'show' : ''}}" bindtap="onClose">
+  <view class="sheet" catchtap="stopTap">
+    <scroll-view scroll-y class="sheet-body" wx:if="{{info}}">
+      <view class="d-head">
+        <view class="d-term">{{info.t}}</view>
+        <view class="d-sub">{{info.en}}　·　{{info.ja}}　·　{{info.c}}　·　{{info.lv}}</view>
+        <view class="d-badge {{info.statusCls}}">{{info.status}}</view>
+      </view>
+
+      <view class="d-sec">定义</view>
+      <view class="d-text">{{info.d}}</view>
+
+      <view class="d-sec">要点</view>
+      <view class="d-points">
+        <view class="dp" wx:for="{{info.points}}" wx:key="*this">{{item}}</view>
+      </view>
+
+      <view class="d-sec">典型场景</view>
+      <view class="d-text">{{info.e}}</view>
+
+      <view class="d-sec">相关术语</view>
+      <view class="d-rel">
+        <text class="tag" wx:for="{{info.rel}}" wx:key="*this"
+              data-name="{{item}}" bindtap="onGoto">{{item}}</text>
+      </view>
+
+      <view class="d-sec">学习状态</view>
+      <view class="d-text muted">{{info.due}}　·　复习 {{info.reps}} 次，遗忘 {{info.lapses}} 次</view>
+
+      <view class="d-actions">
+        <button class="btn" bindtap="onClose">关闭</button>
+      </view>
+    </scroll-view>
+  </view>
+</view>

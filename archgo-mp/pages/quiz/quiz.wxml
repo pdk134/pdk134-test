@@ -1,0 +1,73 @@
+<view class="page theme-{{theme}}">
+
+  <!-- 开始面板 -->
+  <view class="panel start" wx:if="{{phase === 'start'}}">
+    <view class="start-title">术语自测</view>
+    <view class="muted">术语 ↔ 释义双向随机出题，答错自动进难词本。检验记忆成果，从 5 题开始也无压力。</view>
+
+    <view class="count-label">本轮题数</view>
+    <view class="counts">
+      <text class="c {{count === c ? 'on' : ''}}"
+            wx:for="{{counts}}" wx:key="*this"
+            data-n="{{c}}" bindtap="onCount">{{c}} 题</text>
+    </view>
+
+    <button class="btn primary start-btn" bindtap="onStart">开始测试</button>
+  </view>
+
+  <!-- 答题中 -->
+  <block wx:elif="{{phase === 'play'}}">
+    <view class="progress">
+      <view class="bar"><view class="fill" style="width:{{pct}}%"></view></view>
+      <text class="counter">{{idx + 1}} / {{total}}</text>
+    </view>
+
+    <view class="panel question">
+      <view class="q-text">{{q}}</view>
+      <view class="q-tip">{{tip}}</view>
+    </view>
+
+    <view class="options">
+      <view class="opt {{o.state}}"
+            wx:for="{{options}}" wx:key="id"
+            data-id="{{o.id}}" bindtap="onAnswer">
+        <text class="opt-key">{{String.fromCharCode(65 + index)}}</text>
+        <text class="opt-text">{{o.text}}</text>
+      </view>
+    </view>
+
+    <view class="feedback {{answered ? 'show' : ''}}">
+      <view class="fb-text">{{feedback}}</view>
+      <button class="btn primary fb-next" bindtap="onNext">{{nextLabel}}</button>
+    </view>
+  </block>
+
+  <!-- 结果 -->
+  <view class="panel result" wx:elif="{{phase === 'result'}}">
+    <view class="res-title">{{acc === '100%' ? '全部正确，很稳' : '测试完成'}}</view>
+    <view class="res-grid">
+      <view class="res-cell"><b>{{total}}</b><span>总题数</span></view>
+      <view class="res-cell"><b>{{right}}</b><span>答对</span></view>
+      <view class="res-cell"><b>{{acc}}</b><span>正确率</span></view>
+      <view class="res-cell"><b>{{wrongCount}}</b><span>进难词本</span></view>
+    </view>
+
+    <block wx:if="{{wrongList.length > 0}}">
+      <view class="res-sec">错题回顾</view>
+      <view class="wrong-list">
+        <view class="wrong-item" wx:for="{{wrongList}}" wx:key="t"
+              data-name="{{item.t}}" bindtap="onWrongTap">
+          <view class="w-term">{{item.t}}</view>
+          <view class="w-def">{{item.d}}</view>
+        </view>
+      </view>
+    </block>
+
+    <view class="sum-actions">
+      <button class="btn" bindtap="onAgain">再测一组</button>
+    </view>
+  </view>
+
+  <term-detail visible="{{modal.visible}}" term="{{modal.term}}"
+               bind:close="onModalClose" bind:goto="onModalGoto"/>
+</view>

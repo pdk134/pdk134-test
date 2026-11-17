@@ -1,0 +1,103 @@
+/* ========== 账号页 ========== */
+
+/* 当前模式 */
+.mode-head {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+}
+
+.mode-dot {
+  flex: none;
+  width: 20rpx;
+  height: 20rpx;
+  border-radius: 50%;
+  background: var(--good);
+  box-shadow: 0 0 0 8rpx rgba(62, 207, 142, .15);
+}
+
+.mode-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.mode-sub {
+  font-size: 22rpx;
+  color: var(--text-dim);
+  margin-top: 4rpx;
+}
+
+.mode-stats {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 28rpx;
+}
+
+.ms-cell {
+  flex: 1;
+  text-align: center;
+  background: var(--panel-2);
+  border-radius: 12rpx;
+  padding: 20rpx 0;
+}
+
+.ms-cell b {
+  display: block;
+  font-size: 40rpx;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.ms-cell span {
+  display: block;
+  margin-top: 4rpx;
+  font-size: 20rpx;
+  color: var(--text-dim);
+}
+
+/* 区块 */
+.sec-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8rpx;
+}
+
+.row-sub {
+  font-size: 22rpx;
+  color: var(--text-dim);
+  line-height: 1.7;
+  margin-top: 8rpx;
+}
+
+.login-btn {
+  width: 100%;
+  margin-top: 20rpx;
+  font-weight: 600;
+}
+
+/* 隐私条目 */
+.pv-item {
+  display: flex;
+  gap: 20rpx;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid var(--line);
+}
+
+.pv-item:last-child { border-bottom: 0; }
+
+.pv-k {
+  flex: none;
+  width: 150rpx;
+  font-size: 24rpx;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.pv-v {
+  flex: 1;
+  font-size: 22rpx;
+  line-height: 1.7;
+  color: var(--text-dim);
+}

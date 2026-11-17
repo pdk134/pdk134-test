@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "自测",
+  "usingComponents": {
+    "term-detail": "/components/term-detail/term-detail"
+  }
+}

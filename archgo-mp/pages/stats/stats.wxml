@@ -1,0 +1,63 @@
+<view class="page theme-{{theme}}">
+
+  <!-- 总量速览 -->
+  <view class="stat-grid">
+    <view class="stat-cell"><b>{{total}}</b><span>总术语</span></view>
+    <view class="stat-cell"><b>{{learned}}</b><span>已学习</span></view>
+    <view class="stat-cell good"><b>{{mastered}}</b><span>已掌握</span></view>
+    <view class="stat-cell warn"><b>{{due}}</b><span>待复习</span></view>
+  </view>
+
+  <!-- 掌握率环形图 -->
+  <view class="panel">
+    <view class="sec-title">掌握率</view>
+    <view class="donut-wrap">
+      <canvas type="2d" id="donut" class="chart donut"></canvas>
+      <view class="donut-center">
+        <text class="donut-pct">{{pct}}%</text>
+        <text class="donut-sub">{{mastered}} / {{total}}</text>
+      </view>
+    </view>
+    <view class="legend">
+      <view class="lg-item" wx:for="{{legend}}" wx:key="label">
+        <view class="dot" style="background:{{item.color}}"></view>
+        <text>{{item.label}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 近 7 日学习量 -->
+  <view class="panel">
+    <view class="sec-title">近 7 日学习量</view>
+    <canvas type="2d" id="bars" class="chart bars"></canvas>
+  </view>
+
+  <!-- 分类进度 -->
+  <view class="panel">
+    <view class="sec-title">分类进度</view>
+    <view class="cat-row" wx:for="{{cats}}" wx:key="cat">
+      <text class="cat-name">{{item.cat}}</text>
+      <view class="cat-bar"><view class="cat-fill" style="width:{{item.p}}%"></view></view>
+      <text class="cat-num">{{item.m}}/{{item.n}}</text>
+    </view>
+  </view>
+
+  <!-- 难词本 -->
+  <view class="panel">
+    <view class="sec-title">难词本</view>
+    <block wx:if="{{hard.length > 0}}">
+      <view class="hard-item" wx:for="{{hard}}" wx:key="id"
+            data-id="{{item.id}}" bindtap="onHardTap">
+        <view class="hard-top">
+          <text class="hard-term">{{item.t}}</text>
+          <text class="hard-badge">遗忘 {{item.lapses}} · 错 {{item.wrong}}</text>
+        </view>
+        <view class="hard-def">{{item.d}}</view>
+      </view>
+    </block>
+    <view class="muted" wx:else>还没有难词，保持住</view>
+  </view>
+
+  <term-detail visible="{{modal.visible}}" term="{{modal.term}}"
+               bind:close="onModalClose" bind:goto="onModalGoto"/>
+</view>
