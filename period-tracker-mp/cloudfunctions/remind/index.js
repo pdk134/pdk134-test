@@ -18,31 +18,54 @@ const PAGE = 'pages/list/list';       // 点通知打开清单页
 // 开发阶段先用 developer，未发布正式版时也能下发；小程序发布后改回 formal
 const MINIPROGRAM_STATE = 'developer';   // 开发版 developer / 体验版 trial / 正式版 formal
 
-// 模板关键词顺序：日程时间、日程标题、提醒内容。
-// 正常情况由 getFieldSets() 从微信接口读取真实字段名（如 date4 / thing1…）；
-// 下面只是接口不可用时的兜底候选，参数不匹配（47003）会依次重试。
-const FIELD_SETS = [
-  { due: 'time1', title: 'thing2', tip: 'thing3' },
-  { due: 'date1', title: 'thing2', tip: 'thing3' },
-  { due: 'thing1', title: 'thing2', tip: 'thing3' }
-];
+// 模板字段由「关键词」精确识别：日程时间 / 日程标题 / 提醒内容（见 LABEL_RULES）。
+// 正常无需配置；若接口读不到模板（没权限、模板被删），在这里手填一次：
+// const FIELD_MAP = { due: 'time1', title: 'thing2', tip: 'thing3' };
+const FIELD_MAP = null;
 /* ==================================================================== */
 
-function parseKeys(text) {
-  var keys = [], re = /\{\{\s*([A-Za-z_][A-Za-z0-9_]*)\.DATA\s*\}\}/g, m;
-  while ((m = re.exec(text)) !== null) {
-    if (keys.indexOf(m[1]) < 0) keys.push(m[1]);
+/** 从模板定义里拆出「标签 → 字段名」对，如 日程标题:{{thing1.DATA}} */
+function parseFields(text) {
+  var out = [], re = /([^:：{}\s]+)\s*[:：]\s*\{\{\s*([A-Za-z_][A-Za-z0-9_]*)\s*\.DATA\s*\}\}/g, m;
+  while ((m = re.exec(String(text || ''))) !== null) {
+    out.push({ label: m[1], key: m[2] });
   }
-  return keys;
+  return out;
+}
+
+/** 标签关键词：先时间、再标题、最后内容，避免「提醒事项」这类词被内容抢走 */
+const LABEL_RULES = [
+  { role: 'due', re: /时间|日期|时刻|time|date/i },
+  { role: 'title', re: /标题|主题|名称|事项|title/i },
+  { role: 'tip', re: /内容|说明|备注|详情|描述|content|detail/i }
+];
+
+/**
+ * 按标签给三个字段分配角色，不做任何按位置的猜测。
+ * 三个角色都认出来才返回；缺一个就返回 null，由调用方明确报错。
+ */
+function pickFields(text) {
+  var roles = { due: null, title: null, tip: null };
+  parseFields(text).forEach(function (p) {
+    for (var i = 0; i < LABEL_RULES.length; i++) {
+      var r = LABEL_RULES[i];
+      if (roles[r.role] || !r.re.test(p.label)) continue;
+      roles[r.role] = p.key;
+      break;
+    }
+  });
+  if (!roles.due || !roles.title || !roles.tip) return null;
+  if (roles.due === roles.title || roles.due === roles.tip || roles.title === roles.tip) return null;
+  return roles;
 }
 
 /**
  * 直接问微信要这个模板的真实字段名，不再猜编号。
- * getTemplateList 返回的 content 形如「日程提醒:{{thing1.DATA}} …」，
- * 角色由字段名类型识别（见 pickFields），字段顺序调整后无需改代码。
- * 接口不可用时回退到内置的 FIELD_SETS 候选组。
+ * getTemplateList 返回的 content 形如「日程时间:{{date4.DATA}} 日程标题:{{thing1.DATA}} …」，
+ * 角色按字段的**中文标签**识别（见 pickFields），认不出就明确失败，不猜字段名。
  */
-async function getFieldSets() {
+async function getFields() {
+  if (FIELD_MAP && FIELD_MAP.due && FIELD_MAP.title && FIELD_MAP.tip) return FIELD_MAP;
   try {
     var res = await cloud.openapi.subscribeMessage.getTemplateList({});
     var list = (res && res.data) || [];
@@ -55,39 +78,25 @@ async function getFieldSets() {
         if (String(list[j].title || '').indexOf('日程') >= 0) { tpl = list[j]; break; }
       }
     }
-    if (!tpl) return FIELD_SETS;
+    if (!tpl) {
+      console.warn('[remind] 模板列表里没找到', TEMPLATE_ID);
+      return null;
+    }
     console.log('[remind] 模板原始信息', JSON.stringify({
       id: tpl.priTmplId, title: tpl.title, content: tpl.content, example: tpl.example
     }));
 
-    var keys = parseKeys(String(tpl.content || ''));
-    if (keys.length < 3) keys = parseKeys(String(tpl.example || ''));
-    if (keys.length < 3) return FIELD_SETS;
-
-    var auto = pickFields(keys);
-    if (!auto) return FIELD_SETS;
-    console.log('[remind] 模板字段（自动读取）', JSON.stringify(auto));
-    return [auto].concat(FIELD_SETS);
+    var fields = pickFields(tpl.content) || pickFields(tpl.example);
+    if (!fields) {
+      console.warn('[remind] 模板字段识别失败，未发送。content=', tpl.content);
+      return null;
+    }
+    console.log('[remind] 模板字段（按标签识别）', JSON.stringify(fields));
+    return fields;
   } catch (e) {
-    console.warn('[remind] 自动读取模板字段失败，改用候选组', e && (e.errMsg || e.errmsg || e.message));
-    return FIELD_SETS;
+    console.warn('[remind] 读取模板字段失败', e && (e.errMsg || e.errmsg || e.message));
+    return null;
   }
-}
-
-/**
- * 按字段名类型识别角色，不按位置：time 或 date 开头的是日程时间，
- * 其余 thing* 按出现顺序第一个当标题、第二个当内容。
- * 模板里三个字段的先后顺序随便调（卡片显示顺序由模板决定），映射都不会错位。
- */
-function pickFields(keys) {
-  var due = null, things = [];
-  for (var i = 0; i < keys.length; i++) {
-    var k = keys[i];
-    if (!due && (/^time/.test(k) || /^date/.test(k))) due = k;
-    else things.push(k);
-  }
-  if (due && things.length >= 2) return { due: due, title: things[0], tip: things[1] };
-  return null;
 }
 
 function pad(n) { return n < 10 ? '0' + n : String(n); }
@@ -245,41 +254,43 @@ function buildData(fields, values) {
   return data;
 }
 
-async function sendWithFallback(openid, target, baseValues, timeHM) {
-  var sets = await getFieldSets();
-  var lastErr = null;
-  for (var i = 0; i < sets.length; i++) {
-    var fields = sets[i];
-    var values = Object.assign({}, baseValues, { due: dueValue(fields.due, target, timeHM) });
-    try {
-      await cloud.openapi.subscribeMessage.send({
-        touser: openid,
-        templateId: TEMPLATE_ID,
-        page: PAGE,
-        miniprogramState: MINIPROGRAM_STATE,
-        lang: 'zh_CN',
-        data: buildData(fields, values)
-      });
-      return { ok: true, fields: fields };
-    } catch (e) {
-      lastErr = e;
-      var code = e && (e.errCode || e.errcode);
-      var msg = String((e && (e.errMsg || e.errmsg)) || '');
-      // 云调用鉴权失败：控制台「云端测试」/CLI 没有微信侧上下文，必须从小程序端触发
-      if (code === -501001 || code === -501007 ||
-          msg.indexOf('access_token') >= 0 || msg.indexOf('wxCloudApiToken') >= 0) {
-        return { ok: false, reason: '云调用鉴权失败：需从小程序端触发（云开发控制台「云端测试」没有用户上下文）' };
-      }
-      // 47003 = 模板参数不准确（字段名/类型/值格式不对），换一组字段名重试
-      if (code !== 47003 && msg.indexOf('参数') < 0) {
-        return { ok: false, reason: code + ' ' + msg };
-      }
-    }
+/**
+ * 按模板字段发一条订阅消息。
+ * 字段识别不出来就直接失败并给出原因，不再猜字段名重试——
+ * 猜错会把标题和内容填反，比不发更糟，也不容易发现。
+ */
+async function sendOnce(openid, target, baseValues, timeHM) {
+  var fields = await getFields();
+  if (!fields) {
+    return {
+      ok: false,
+      reason: '未识别到模板字段：确认模板含「日程时间/日程标题/提醒内容」三个关键词，或在云函数配置区填 FIELD_MAP'
+    };
   }
-  return {
-    ok: false,
-    reason: '字段名或值格式不匹配：' + String(lastErr && (lastErr.errMsg || lastErr.errmsg || ''))
-  };
+  var values = Object.assign({}, baseValues, { due: dueValue(fields.due, target, timeHM) });
+  try {
+    await cloud.openapi.subscribeMessage.send({
+      touser: openid,
+      templateId: TEMPLATE_ID,
+      page: PAGE,
+      miniprogramState: MINIPROGRAM_STATE,
+      lang: 'zh_CN',
+      data: buildData(fields, values)
+    });
+    return { ok: true, fields: fields };
+  } catch (e) {
+    var code = e && (e.errCode || e.errcode);
+    var msg = String((e && (e.errMsg || e.errmsg)) || '');
+    // 云调用鉴权失败：控制台「云端测试」/CLI 没有微信侧上下文，必须从小程序端触发
+    if (code === -501001 || code === -501007 ||
+        msg.indexOf('access_token') >= 0 || msg.indexOf('wxCloudApiToken') >= 0) {
+      return { ok: false, reason: '云调用鉴权失败：需从小程序端触发（云开发控制台「云端测试」没有用户上下文）' };
+    }
+    if (code === 47003 || msg.indexOf('参数') >= 0) {
+      return { ok: false, reason: '47003 模板参数不匹配（字段类型/值格式与模板不符）：' + msg };
+    }
+    return { ok: false, reason: code + ' ' + msg };
+  }
 }
 
 /**
@@ -297,7 +308,7 @@ exports.main = async (event) => {
       return { ok: false, reason: '请从小程序端调用；云开发控制台测试拿不到用户 openid' };
     }
     var testTarget = fmtISO(beijingDate(DAYS_BEFORE));
-    var testResult = await sendWithFallback(testOpenid, testTarget, {
+    var testResult = await sendOnce(testOpenid, testTarget, {
       title: clipThing('测试提醒'),
       tip: clipThing('这是一条测试提醒')
     });
@@ -362,7 +373,7 @@ exports.main = async (event) => {
         title: clipThing(firstA.title),
         tip: joinTitles(listA.map(function (x) { return x.title; }), 20)
       };
-      var rA = await sendWithFallback(
+      var rA = await sendOnce(
         oidA, String(firstA.due_date || '').slice(0, 10), valuesA, timeA
       );
       var reasonA = rA.ok ? '' : hintReason(rA.reason);
@@ -432,7 +443,7 @@ exports.main = async (event) => {
           tip: joinTitles(
             g.today.concat(g.tomorrow).map(function (x) { return x.title; }), 20)
         };
-        var r = await sendWithFallback(oid, primaryDate, values, '');
+        var r = await sendOnce(oid, primaryDate, values, '');
         var reason = r.ok ? '' : hintReason(r.reason);
         if (r.ok) {
           daily.sent++;
