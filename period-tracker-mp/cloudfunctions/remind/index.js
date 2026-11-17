@@ -18,9 +18,10 @@ const PAGE = 'pages/list/list';       // 点通知打开清单页
 // 开发阶段先用 developer，未发布正式版时也能下发；小程序发布后改回 formal
 const MINIPROGRAM_STATE = 'developer';   // 开发版 developer / 体验版 trial / 正式版 formal
 
-// 模板字段由「关键词」精确识别：日程时间 / 日程标题 / 提醒内容（见 LABEL_RULES）。
+// 只使用模板里的两个字段：日程时间 / 提醒内容（见 LABEL_RULES）。
+// 「日程标题」不填，模板里留空即可；等后台把模板改成两字段后代码无需再动。
 // 正常无需配置；若接口读不到模板（没权限、模板被删），在这里手填一次：
-// const FIELD_MAP = { due: 'time1', title: 'thing2', tip: 'thing3' };
+// const FIELD_MAP = { due: 'time1', tip: 'thing2' };
 const FIELD_MAP = null;
 /* ==================================================================== */
 
@@ -33,19 +34,18 @@ function parseFields(text) {
   return out;
 }
 
-/** 标签关键词：先时间、再标题、最后内容，避免「提醒事项」这类词被内容抢走 */
+/** 标签关键词：先时间、再内容。只认这两个角色，标题字段一律不碰 */
 const LABEL_RULES = [
   { role: 'due', re: /时间|日期|时刻|time|date/i },
-  { role: 'title', re: /标题|主题|名称|事项|title/i },
   { role: 'tip', re: /内容|说明|备注|详情|描述|content|detail/i }
 ];
 
 /**
- * 按标签给三个字段分配角色，不做任何按位置的猜测。
- * 三个角色都认出来才返回；缺一个就返回 null，由调用方明确报错。
+ * 按标签给字段分配角色，不做任何按位置的猜测。
+ * 时间和内容都认出来才返回；缺一个就返回 null，由调用方明确报错。
  */
 function pickFields(text) {
-  var roles = { due: null, title: null, tip: null };
+  var roles = { due: null, tip: null };
   parseFields(text).forEach(function (p) {
     for (var i = 0; i < LABEL_RULES.length; i++) {
       var r = LABEL_RULES[i];
@@ -54,8 +54,8 @@ function pickFields(text) {
       break;
     }
   });
-  if (!roles.due || !roles.title || !roles.tip) return null;
-  if (roles.due === roles.title || roles.due === roles.tip || roles.title === roles.tip) return null;
+  if (!roles.due || !roles.tip) return null;
+  if (roles.due === roles.tip) return null;
   return roles;
 }
 
@@ -65,7 +65,7 @@ function pickFields(text) {
  * 角色按字段的**中文标签**识别（见 pickFields），认不出就明确失败，不猜字段名。
  */
 async function getFields() {
-  if (FIELD_MAP && FIELD_MAP.due && FIELD_MAP.title && FIELD_MAP.tip) return FIELD_MAP;
+  if (FIELD_MAP && FIELD_MAP.due && FIELD_MAP.tip) return FIELD_MAP;
   try {
     var res = await cloud.openapi.subscribeMessage.getTemplateList({});
     var list = (res && res.data) || [];
@@ -99,7 +99,8 @@ async function getFields() {
   }
 }
 
-function pad(n) { return n < 10 ? '0' + n : String(n); }
+// 注意：'09' 这类字符串参与 < 10 比较会被转成数字，再补零就成了 '009'，所以先取整
+function pad(n) { n = Number(n) || 0; return n < 10 ? '0' + n : String(n); }
 
 /** 云函数运行环境是 UTC，统一换算成北京时间（UTC+8）后再取日期 */
 function beijingDate(offsetDays) {
@@ -180,30 +181,38 @@ async function alreadySent(openid, minute) {
   } catch (e) { return false; }
 }
 
-/** 标题行的概览文案：有今天用今天兜底，两天都有就合并口径 */
-function buildTip(a, b) {
-  if (a && b) return '今明两天共' + (a + b) + '件待办';
-  if (a) return '今天有' + a + '件待办';
-  return '明天有' + b + '件待办';
-}
-
 /**
- * 内容行：把任务名串成一条 ≤max 字的摘要。
- * 能列则逐条列（、分隔），列不完时以「等N件」收尾，让总数一目了然；
- * 第一条就放不下时退化为单条截断。
+ * 内容行（thing，≤20 字）：把任务名串成一条摘要。
+ * totalLabel 非 0 时，列不完以「等N件」收尾；传 0 表示不追加（外层已给数量）。
  */
-function joinTitles(titles, max) {
-  var parts = [], leftover = 0;
+function joinTitles(titles, max, totalLabel) {
+  var parts = [], leftover = false;
+  var reserve = totalLabel ? 4 : 1;     // 「等N件」最多占 4 字
   for (var i = 0; i < titles.length; i++) {
     var t = clipThing(titles[i]);
     var next = parts.length ? parts.join('、') + '、' + t : t;
-    if (next.length > max - 4) { leftover = titles.length - i; break; }  // 预留「等N件」的位置
+    if (next.length > max - reserve) { leftover = true; break; }
     parts.push(t);
   }
   if (!parts.length) return clipThing(titles[0]);
   var s = parts.join('、');
-  if (leftover) s += '等' + titles.length + '件';
+  if (leftover && totalLabel) s += '等' + totalLabel + '件';
   return s;
+}
+
+/**
+ * 提醒内容：只放「要干什么」，不再单列标题。
+ *   只有今天 —— 直接列事项。不带「今天」二字，收到时本来就是今天；
+ *   只有明天 —— 「明天 」开头，否则会被当成今天的；
+ *   两天都有 —— 「今X件明Y件 」开头，只列今天的事项，明天用数量带过。
+ */
+function buildTip(todayTitles, tomorrowTitles) {
+  var tN = todayTitles.length, mN = tomorrowTitles.length;
+  if (!tN && !mN) return '';
+  if (!mN) return joinTitles(todayTitles, 20, tN);
+  if (!tN) return clipThing('明天 ' + joinTitles(tomorrowTitles, 17, mN));
+  var prefix = '今' + tN + '件明' + mN + '件 ';
+  return clipThing(prefix + joinTitles(todayTitles, 20 - prefix.length, 0));
 }
 /** 没勾「总是保持以上选择」时，第二天大概率额度已空，给个可读的原因 */
 function hintReason(reason) {
@@ -264,7 +273,7 @@ async function sendOnce(openid, target, baseValues, timeHM) {
   if (!fields) {
     return {
       ok: false,
-      reason: '未识别到模板字段：确认模板含「日程时间/日程标题/提醒内容」三个关键词，或在云函数配置区填 FIELD_MAP'
+      reason: '未识别到模板字段：确认模板含「日程时间」「提醒内容」两个关键词，或在云函数配置区填 FIELD_MAP'
     };
   }
   var values = Object.assign({}, baseValues, { due: dueValue(fields.due, target, timeHM) });
@@ -309,8 +318,7 @@ exports.main = async (event) => {
     }
     var testTarget = fmtISO(beijingDate(DAYS_BEFORE));
     var testResult = await sendOnce(testOpenid, testTarget, {
-      title: clipThing('测试提醒'),
-      tip: clipThing('这是一条测试提醒')
+      tip: clipThing('测试提醒：收到说明时间与内容都对')
     });
     var testLogError = await writeLog({
       type: 'test',
@@ -370,8 +378,7 @@ exports.main = async (event) => {
       var firstA = listA[0];
       var timeA = String(firstA.due_time || '').slice(0, 5);
       var valuesA = {
-        title: clipThing(firstA.title),
-        tip: joinTitles(listA.map(function (x) { return x.title; }), 20)
+        tip: joinTitles(listA.map(function (x) { return x.title; }), 20, listA.length)
       };
       var rA = await sendOnce(
         oidA, String(firstA.due_date || '').slice(0, 10), valuesA, timeA
@@ -387,8 +394,8 @@ exports.main = async (event) => {
       summary.logError = await writeLog({
         type: 'at', openid: oidA, remindAt: minute,
         taskIds: listA.map(function (x) { return x.id || x._id; }),
-        target: firstA.due_date, time: timeA,
-        title: valuesA.title, tip: valuesA.tip,
+        target: firstA.due_date, time: timeA, count: listA.length,
+        tip: valuesA.tip,
         ok: rA.ok, reason: reasonA, fields: rA.ok ? rA.fields : null
       }) || summary.logError;
     }
@@ -435,13 +442,13 @@ exports.main = async (event) => {
       for (var i = 0; i < openids.length; i++) {
         var oid = openids[i];
         var g = groups[oid];
-        // 有今天的任务就用今天做主日期；标题给概览，内容列具体事项
-        var primary = g.today.length ? g.today : g.tomorrow;
+        // 有今天的任务就用今天做主日期；内容只放事项，不再单独填标题字段
         var primaryDate = g.today.length ? today : tomorrow;
         var values = {
-          title: clipThing(buildTip(g.today.length, g.tomorrow.length)),
-          tip: joinTitles(
-            g.today.concat(g.tomorrow).map(function (x) { return x.title; }), 20)
+          tip: buildTip(
+            g.today.map(function (x) { return x.title; }),
+            g.tomorrow.map(function (x) { return x.title; })
+          )
         };
         var r = await sendOnce(oid, primaryDate, values, '');
         var reason = r.ok ? '' : hintReason(r.reason);
@@ -459,7 +466,6 @@ exports.main = async (event) => {
           todayCount: g.today.length,
           tomorrowCount: g.tomorrow.length,
           target: primaryDate,
-          title: primary[0].title,
           tip: values.tip,
           ok: r.ok,
           reason: reason,
