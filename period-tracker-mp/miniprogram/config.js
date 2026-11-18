@@ -51,7 +51,7 @@ const CFG = {
   // 设了具体时间的任务按 remind_at 到点提醒；没设时间的任务每天 8:00 汇总当天+次日。
   // 定时频率、模板字段名、日志集合等配置在 cloudfunctions/remind/index.js 顶部，
   // 触发器在 cloudfunctions/remind/config.json；发送记录写入云数据库 remind_log 集合
-  REMIND_TMPL_ID: 'EPvaF7BUcvy5Pg5bseZBDJgtReOba0EMGvssnkkaoA8'
+  REMIND_TMPL_ID: 'EPvaF7BUcvy5Pg5bseZBDFLWE2jxNaMNYUz70YrfJsw'
 };
 
 module.exports = CFG;

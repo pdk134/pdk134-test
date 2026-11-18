@@ -6,7 +6,7 @@ const _ = db.command;
 
 /* ===================== 配置区（按后台模板改这里） ===================== */
 // mp.weixin.qq.com → 功能 → 订阅消息 → 我的模板 →「日程提醒」（一次性订阅）
-const TEMPLATE_ID = 'EPvaF7BUcvy5Pg5bseZBDJgtReOba0EMGvssnkkaoA8';
+const TEMPLATE_ID = 'EPvaF7BUcvy5Pg5bseZBDFLWE2jxNaMNYUz70YrfJsw';
 const COLLECTION = 'tasks';
 const LOG_COLLECTION = 'remind_log';   // 每次运行的发送记录，排查问题时查这里
 const LOG_KEEP_DAYS = 90;             // 日志保留天数，更早的自动清理
