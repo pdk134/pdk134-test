@@ -182,32 +182,14 @@ async function alreadySent(openid, minute) {
 }
 
 /**
- * 内容行（thing，≤20 字）：把任务名串成一条摘要。
- * totalLabel 非 0 时，列不完以「等N件」收尾；传 0 表示不追加（外层已给数量）。
- */
-function joinTitles(titles, max, totalLabel) {
-  var parts = [], leftover = false;
-  var reserve = totalLabel ? 4 : 1;     // 「等N件」最多占 4 字
-  for (var i = 0; i < titles.length; i++) {
-    var t = clipThing(titles[i]);
-    var next = parts.length ? parts.join('、') + '、' + t : t;
-    if (next.length > max - reserve) { leftover = true; break; }
-    parts.push(t);
-  }
-  if (!parts.length) return clipThing(titles[0]);
-  var s = parts.join('、');
-  if (leftover && totalLabel) s += '等' + totalLabel + '件';
-  return s;
-}
-
-/**
- * 提醒内容：只列「要干什么」，不加任何日期/数量前缀，把 20 字全留给事项本身。
- * 排序按到期日由近到远：今天的在前、明天的在后，所以先看到的是最该做的。
- * 列不完时以「等N件」收尾，让人知道还有几条没显示。
+ * 提醒内容：纯粹罗列任务标题，用「、」连接，不加任何日期、件数或模糊描述。
+ * 排序按到期日由近到远：今天的在前、明天的在后，先看到最该做的；
+ * 超过 20 字（thing 上限）直接截断，不写「等N件」之类的统计。
  */
 function buildTip(todayTitles, tomorrowTitles) {
   var titles = todayTitles.concat(tomorrowTitles);
-  return titles.length ? joinTitles(titles, 20, titles.length) : '';
+  if (!titles.length) return '';
+  return clipThing(titles.join('、'));
 }
 /** 没勾「总是保持以上选择」时，第二天大概率额度已空，给个可读的原因 */
 function hintReason(reason) {
@@ -373,7 +355,7 @@ exports.main = async (event) => {
       var firstA = listA[0];
       var timeA = String(firstA.due_time || '').slice(0, 5);
       var valuesA = {
-        tip: joinTitles(listA.map(function (x) { return x.title; }), 20, listA.length)
+        tip: buildTip(listA.map(function (x) { return x.title; }), [])
       };
       var rA = await sendOnce(
         oidA, String(firstA.due_date || '').slice(0, 10), valuesA, timeA
