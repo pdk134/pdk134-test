@@ -201,18 +201,13 @@ function joinTitles(titles, max, totalLabel) {
 }
 
 /**
- * 提醒内容：只放「要干什么」，不再单列标题。
- *   只有今天 —— 直接列事项。不带「今天」二字，收到时本来就是今天；
- *   只有明天 —— 「明天 」开头，否则会被当成今天的；
- *   两天都有 —— 「今X件明Y件 」开头，只列今天的事项，明天用数量带过。
+ * 提醒内容：只列「要干什么」，不加任何日期/数量前缀，把 20 字全留给事项本身。
+ * 排序按到期日由近到远：今天的在前、明天的在后，所以先看到的是最该做的。
+ * 列不完时以「等N件」收尾，让人知道还有几条没显示。
  */
 function buildTip(todayTitles, tomorrowTitles) {
-  var tN = todayTitles.length, mN = tomorrowTitles.length;
-  if (!tN && !mN) return '';
-  if (!mN) return joinTitles(todayTitles, 20, tN);
-  if (!tN) return clipThing('明天 ' + joinTitles(tomorrowTitles, 17, mN));
-  var prefix = '今' + tN + '件明' + mN + '件 ';
-  return clipThing(prefix + joinTitles(todayTitles, 20 - prefix.length, 0));
+  var titles = todayTitles.concat(tomorrowTitles);
+  return titles.length ? joinTitles(titles, 20, titles.length) : '';
 }
 /** 没勾「总是保持以上选择」时，第二天大概率额度已空，给个可读的原因 */
 function hintReason(reason) {
