@@ -13,6 +13,14 @@ def w2(v:mp.Value,lock:mp.Lock):
         
         v.value += 1
     lock.release()
+
+def outer():
+    x = 10
+    def inner():
+        nonlocal x
+        x+=1
+        print(x)
+    return inner
 if __name__ == '__main__':
     v = mp.Value('i', 0)
     lock = mp.Lock()
@@ -23,3 +31,9 @@ if __name__ == '__main__':
     p1.join()
     p2.join()
     print(v.value)
+    outer()()
+    
+
+
+
+
