@@ -1,25 +1,18 @@
-def func(list1):
-    str1 = "qwertyuiop"
-    str2 = "asdfghjkl"
-    str3 = "zxcvbnm"
-    result = []
-    for i in list1:
-        z1 = 0
-        z2 = 0
-        z3 = 0
-        for j in i:
-            j = j.lower()
-            if j in str1:
-                z1 += 1
-            elif j in str2:
-                z2 += 1
-            elif j in str3:
-                z3 += 1
-        if [z1, z2, z3].count(0) == 2:
-            result.append(i)
+"""要求:
+1.定义一个 Student 类
+2.构造方法接收 name 和 age 两个参数，并保存为实例属性
+3.实现 show_info() 方法，输出格式为
+姓名：小明，年龄：18
+4.在 if __name__ == "__main__": 中创建 Student("小明", 18) 对象，并调用 show_info() 方法"""
 
-    return result
+class Student:
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age
 
+    def show_info(self):
+        print(f"姓名：{self.name}，年龄：{self.age}")
 
-
-
+if __name__ == "__main__":
+    student = Student("小明", 18)
+    student.show_info()
